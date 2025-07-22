@@ -13,171 +13,324 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Global Styles */
+        /* Reset & Global Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0891b2;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 0.75rem;
         }
         
-        /* Header Styles */
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        /* Professional Header */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1030;
+            height: 70px;
         }
         
         .navbar-brand {
             font-weight: 700;
-            color: #667eea !important;
+            color: var(--primary) !important;
+            font-size: 1.4rem;
         }
         
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 20px;
-            min-height: calc(100vh - 80px);
-        }
-        
-        /* Cards */
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .stat-card.success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        
-        .stat-card.warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .stat-card.info {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        /* Buttons */
-        .btn {
-            border-radius: 10px;
+        .navbar .btn {
+            border-radius: var(--radius);
             font-weight: 500;
-            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+        /* Main Content Layout */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+            min-height: calc(100vh - 70px);
+            background: var(--light);
         }
         
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            transform: translateY(-2px);
-        }
-        
-        .btn-outline-primary {
-            border: 2px solid #667eea;
-            color: #667eea;
-        }
-        
-        .btn-outline-primary:hover {
-            background: #667eea;
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-        
-        /* Forms */
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        
-        /* Tables */
-        .table {
+        /* Professional Cards */
+        .card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             background: white;
-            border-radius: 15px;
+            transition: all 0.2s ease;
             overflow: hidden;
         }
         
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+        }
+        
+        .card-header {
+            background: var(--light);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            padding: 1.25rem;
+        }
+        
+        /* Dashboard Stats Cards */
+        .stat-card {
+            border: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .stat-card.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+        }
+        
+        .stat-card .card-body {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .stat-card i {
+            opacity: 0.8;
+        }
+        
+        /* Modern Buttons */
+        .btn {
+            border-radius: var(--radius);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border: none;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-outline-primary {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); }
+        .btn-info { background: var(--info); }
+        
+        /* Professional Forms */
+        .form-control, .form-select {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Professional Tables */
+        .table {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 0;
+            font-size: 0.875rem;
+        }
+        
         .table thead th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             color: white;
             border: none;
             font-weight: 600;
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
         }
         
-        /* Offcanvas */
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background: var(--light);
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Professional Sidebar */
         .offcanvas {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: white;
+            border-right: 1px solid var(--border);
+            width: 280px;
+        }
+        
+        .offcanvas-header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+        
+        .offcanvas-title {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .offcanvas-body {
+            padding: 1rem;
         }
         
         .offcanvas-body .nav-link {
-            color: #333;
+            color: var(--secondary);
             font-weight: 500;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin: 5px 0;
-            transition: all 0.3s ease;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius);
+            margin: 0.25rem 0;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
         
-        .offcanvas-body .nav-link:hover,
+        .offcanvas-body .nav-link:hover {
+            background: var(--light);
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+        
         .offcanvas-body .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             color: white;
+            box-shadow: var(--shadow);
         }
         
-        /* Loader */
+        .offcanvas-body .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Professional Loader */
         .loader-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(15, 23, 42, 0.8);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            backdrop-filter: blur(4px);
         }
         
         .loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #667eea;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+        
+        .loader-text {
+            color: white;
+            margin-top: 1rem;
+            font-weight: 500;
         }
         
         @keyframes spin {
@@ -185,26 +338,12 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 15px;
-            }
-            
-            .card-body {
-                padding: 1rem;
-            }
-            
-            .table-responsive {
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* Loading Placeholder */
-        .loading-placeholder {
+        /* Professional Loading Skeletons */
+        .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
+            border-radius: var(--radius);
         }
         
         @keyframes loading {
@@ -212,52 +351,313 @@
             100% { background-position: -200% 0; }
         }
         
-        /* Hidden */
-        .d-none {
-            display: none !important;
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
         }
         
-        /* Auth Container */
+        .skeleton-title {
+            height: 1.5rem;
+            width: 60%;
+            margin-bottom: 1rem;
+        }
+        
+        .skeleton-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        /* Professional Alerts */
+        .alert {
+            border: none;
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left-color: var(--success);
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            color: #991b1b;
+            border-left-color: var(--danger);
+        }
+        
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-left-color: var(--warning);
+        }
+        
+        .alert-info {
+            background: #f0f9ff;
+            color: #075985;
+            border-left-color: var(--info);
+        }
+        
+        /* Professional Badges */
+        .badge {
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+        }
+        
+        /* Professional Image Previews */
+        .img-preview {
+            max-width: 80px;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        /* Professional Copy Button */
+        .copy-btn {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--secondary);
+            margin-left: 0.5rem;
+        }
+        
+        .copy-btn:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        /* Professional Auth Container */
         .auth-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
         }
         
         .auth-card {
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
-        /* Alerts */
-        .alert {
-            border-radius: 10px;
+        /* Professional Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        /* Professional Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-buttons .btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Professional Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.success { background: var(--success); }
+        .status-dot.warning { background: var(--warning); }
+        .status-dot.danger { background: var(--danger); }
+        .status-dot.info { background: var(--info); }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .stat-card h3 {
+                font-size: 2rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.8rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .stat-card .card-body {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Professional Modals */
+        .modal-content {
             border: none;
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
-        /* Badge */
-        .badge {
-            border-radius: 20px;
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
         }
         
-        /* Image preview */
-        .img-preview {
-            max-width: 100px;
-            max-height: 100px;
-            object-fit: cover;
-            border-radius: 10px;
+        .modal-title {
+            font-weight: 700;
+            color: var(--primary);
         }
         
-        /* Copy button */
-        .copy-btn {
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .modal-body {
+            padding: 1.5rem;
         }
         
-        .copy-btn:hover {
-            color: #667eea;
+        .modal-footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+        }
+        
+        /* Professional Tabs */
+        .nav-tabs {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: none;
+        }
+        
+        /* Professional Search */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-container .form-control {
+            padding-left: 2.5rem;
+        }
+        
+        .search-container .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+        
+        /* Real-time Data Indicators */
+        .realtime-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-left: 1rem;
+        }
+        
+        .realtime-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Professional Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--secondary);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h4 {
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        /* Professional Data Stats */
+        .data-stat {
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .data-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .data-stat-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
     </style>
 </head>
@@ -265,6 +665,7 @@
     <!-- Loader Overlay -->
     <div id="loaderOverlay" class="loader-overlay d-none">
         <div class="loader"></div>
+        <div class="loader-text">Processing...</div>
     </div>
 
     <!-- Auth Container -->
@@ -369,6 +770,10 @@
                     <a class="nav-link" href="#" onclick="addDemoData()">
                         <i class="bi bi-database-add me-2"></i>Add Demo Data
                     </a>
+                    <hr class="my-3">
+                    <a class="nav-link" href="#" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                    </a>
                 </nav>
             </div>
         </div>
@@ -383,11 +788,18 @@
                 <h2 class="mb-4">Dashboard Overview</h2>
                 <div class="row g-4">
                     <div class="col-md-3 col-sm-6">
-                        <div class="card stat-card">
+                        <div class="card stat-card primary">
                             <div class="card-body text-center">
                                 <i class="bi bi-people fs-1 mb-3"></i>
-                                <h3 id="totalUsers">0</h3>
+                                <h3 id="totalUsers">
+                                    <span class="skeleton skeleton-text d-inline-block" style="width: 60px; height: 2.5rem;" id="totalUsersSkeleton"></span>
+                                    <span id="totalUsersValue" class="d-none">0</span>
+                                </h3>
                                 <p class="mb-0">Total Users</p>
+                                <div class="realtime-indicator">
+                                    <div class="realtime-dot"></div>
+                                    <span>Live</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -395,8 +807,15 @@
                         <div class="card stat-card info">
                             <div class="card-body text-center">
                                 <i class="bi bi-trophy fs-1 mb-3"></i>
-                                <h3 id="activeTournaments">0</h3>
+                                <h3 id="activeTournaments">
+                                    <span class="skeleton skeleton-text d-inline-block" style="width: 60px; height: 2.5rem;" id="activeTournamentsSkeleton"></span>
+                                    <span id="activeTournamentsValue" class="d-none">0</span>
+                                </h3>
                                 <p class="mb-0">Active/Upcoming Tournaments</p>
+                                <div class="realtime-indicator">
+                                    <div class="realtime-dot"></div>
+                                    <span>Live</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -404,8 +823,15 @@
                         <div class="card stat-card warning">
                             <div class="card-body text-center">
                                 <i class="bi bi-hourglass-split fs-1 mb-3"></i>
-                                <h3 id="pendingWithdrawals">0</h3>
+                                <h3 id="pendingWithdrawals">
+                                    <span class="skeleton skeleton-text d-inline-block" style="width: 60px; height: 2.5rem;" id="pendingWithdrawalsSkeleton"></span>
+                                    <span id="pendingWithdrawalsValue" class="d-none">0</span>
+                                </h3>
                                 <p class="mb-0">Pending Withdrawals</p>
+                                <div class="realtime-indicator">
+                                    <div class="realtime-dot"></div>
+                                    <span>Live</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -413,8 +839,15 @@
                         <div class="card stat-card success">
                             <div class="card-body text-center">
                                 <i class="bi bi-check-circle fs-1 mb-3"></i>
-                                <h3 id="completedWithdrawals">0</h3>
+                                <h3 id="completedWithdrawals">
+                                    <span class="skeleton skeleton-text d-inline-block" style="width: 60px; height: 2.5rem;" id="completedWithdrawalsSkeleton"></span>
+                                    <span id="completedWithdrawalsValue" class="d-none">0</span>
+                                </h3>
                                 <p class="mb-0">Completed Withdrawals</p>
+                                <div class="realtime-indicator">
+                                    <div class="realtime-dot"></div>
+                                    <span>Live</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -423,11 +856,13 @@
 
             <!-- Games Section -->
             <div id="gamesSection" class="section d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Games Management</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gameModal" onclick="openGameModal()">
-                        <i class="bi bi-plus-lg me-1"></i>Add Game
-                    </button>
+                <div class="section-header">
+                    <h2 class="section-title">Games Management</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gameModal" onclick="openGameModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Game
+                        </button>
+                    </div>
                 </div>
                 <div class="card">
                     <div class="card-body">
@@ -452,11 +887,13 @@
 
             <!-- Promotions Section -->
             <div id="promotionsSection" class="section d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Promotions Management</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promotionModal" onclick="openPromotionModal()">
-                        <i class="bi bi-plus-lg me-1"></i>Add Promotion
-                    </button>
+                <div class="section-header">
+                    <h2 class="section-title">Promotions Management</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promotionModal" onclick="openPromotionModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Promotion
+                        </button>
+                    </div>
                 </div>
                 <div class="card">
                     <div class="card-body">
@@ -482,11 +919,13 @@
 
             <!-- Tournaments Section -->
             <div id="tournamentsSection" class="section d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Tournaments Management</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tournamentModal" onclick="openTournamentModal()">
-                        <i class="bi bi-plus-lg me-1"></i>Add Tournament
-                    </button>
+                <div class="section-header">
+                    <h2 class="section-title">Tournaments Management</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tournamentModal" onclick="openTournamentModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Tournament
+                        </button>
+                    </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-4">
@@ -521,13 +960,11 @@
 
             <!-- Users Section -->
             <div id="usersSection" class="section d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Users Management</h2>
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control" id="userSearch" placeholder="Search by name, email, or phone..." style="width: 300px;">
-                        <button class="btn btn-outline-primary" onclick="searchUsers()">
-                            <i class="bi bi-search"></i>
-                        </button>
+                <div class="section-header">
+                    <h2 class="section-title">Users Management</h2>
+                    <div class="search-container">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control" id="userSearch" placeholder="Search by name, email, or phone..." style="width: 350px;" onkeyup="searchUsers()">
                     </div>
                 </div>
                 <div class="card">
@@ -556,13 +993,11 @@
 
             <!-- Transactions Section -->
             <div id="transactionsSection" class="section d-none">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Transactions</h2>
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control" id="transactionSearch" placeholder="Search by User ID..." style="width: 300px;">
-                        <button class="btn btn-outline-primary" onclick="searchTransactions()">
-                            <i class="bi bi-search"></i>
-                        </button>
+                <div class="section-header">
+                    <h2 class="section-title">Transactions</h2>
+                    <div class="search-container">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control" id="transactionSearch" placeholder="Search by User ID..." style="width: 300px;" onkeyup="searchTransactions()">
                     </div>
                 </div>
                 <div class="card">
@@ -590,7 +1025,13 @@
 
             <!-- Add Money Requests Section -->
             <div id="addmoneySection" class="section d-none">
-                <h2 class="mb-4">Add Money Requests</h2>
+                <div class="section-header">
+                    <h2 class="section-title">Add Money Requests</h2>
+                    <div class="realtime-indicator">
+                        <div class="realtime-dot"></div>
+                        <span>Real-time Updates</span>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
@@ -616,7 +1057,13 @@
 
             <!-- Withdrawals Section -->
             <div id="withdrawalsSection" class="section d-none">
-                <h2 class="mb-4">Withdrawals Management</h2>
+                <div class="section-header">
+                    <h2 class="section-title">Withdrawals Management</h2>
+                    <div class="realtime-indicator">
+                        <div class="realtime-dot"></div>
+                        <span>Real-time Updates</span>
+                    </div>
+                </div>
                 <ul class="nav nav-tabs mb-3" id="withdrawalTabs">
                     <li class="nav-item">
                         <a class="nav-link active" data-bs-toggle="tab" href="#pendingTab">Pending</a>
@@ -700,7 +1147,9 @@
 
             <!-- Settings Section -->
             <div id="settingsSection" class="section d-none">
-                <h2 class="mb-4">App Settings</h2>
+                <div class="section-header">
+                    <h2 class="section-title">App Settings</h2>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <form id="settingsForm">
@@ -980,6 +1429,7 @@
         window.openWithdrawalModal = openWithdrawalModal;
         window.addDemoData = addDemoData;
         window.copyToClipboard = copyToClipboard;
+        window.refreshData = refreshData;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1067,7 +1517,7 @@
         // Handle admin setup
         async function handleAdminSetup() {
             try {
-                showLoader();
+                showLoader('Setting up admin account...');
                 const email = document.getElementById('setupEmail').value;
                 const password = document.getElementById('setupPassword').value;
 
@@ -1075,6 +1525,7 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
+                showLoader('Configuring admin settings...');
                 // Save admin config
                 await set(ref(database, 'adminConfig'), {
                     setupComplete: true,
@@ -1082,11 +1533,21 @@
                     createdAt: new Date().toISOString()
                 });
 
-                showAlert('Admin setup completed successfully!', 'success');
+                showAlert('🎉 Admin setup completed successfully! Welcome to your admin panel.', 'success');
                 hideLoader();
             } catch (error) {
                 console.error('Setup error:', error);
-                showAlert('Setup failed: ' + error.message, 'danger');
+                let errorMessage = 'Setup failed: ';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage += 'This email is already registered.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage += 'Password should be at least 6 characters.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage += 'Please enter a valid email address.';
+                } else {
+                    errorMessage += error.message;
+                }
+                showAlert(errorMessage, 'danger');
                 hideLoader();
             }
         }
@@ -1094,15 +1555,28 @@
         // Handle admin login
         async function handleAdminLogin() {
             try {
-                showLoader();
+                showLoader('Signing in...');
                 const email = document.getElementById('loginEmail').value;
                 const password = document.getElementById('loginPassword').value;
 
                 await signInWithEmailAndPassword(auth, email, password);
+                showLoader('Loading admin panel...');
                 hideLoader();
             } catch (error) {
                 console.error('Login error:', error);
-                showAlert('Login failed: ' + error.message, 'danger');
+                let errorMessage = 'Login failed: ';
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage += 'No admin account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage += 'Incorrect password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage += 'Please enter a valid email address.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage += 'Too many failed attempts. Please try again later.';
+                } else {
+                    errorMessage += error.message;
+                }
+                showAlert(errorMessage, 'danger');
                 hideLoader();
             }
         }
@@ -1139,33 +1613,51 @@
             document.getElementById('mainApp').classList.remove('d-none');
         }
 
-        function showLoader() {
-            document.getElementById('loaderOverlay').classList.remove('d-none');
+        function showLoader(message = 'Processing...') {
+            const overlay = document.getElementById('loaderOverlay');
+            const text = overlay.querySelector('.loader-text');
+            text.textContent = message;
+            overlay.classList.remove('d-none');
         }
 
         function hideLoader() {
             document.getElementById('loaderOverlay').classList.add('d-none');
         }
 
-        // Initialize data listeners
+        // Initialize data listeners with connection status
         function initializeData() {
+            showConnectionStatus(true);
+            
             // Listen to games
             onValue(ref(database, 'games'), (snapshot) => {
                 games = snapshot.val() || {};
                 updateGamesTable();
                 updateGameSelectors();
+                showDataLoadedFeedback('Games');
+            }, (error) => {
+                console.error('Error loading games:', error);
+                showAlert('Failed to load games data', 'danger');
+                showConnectionStatus(false);
             });
 
             // Listen to promotions
             onValue(ref(database, 'promotions'), (snapshot) => {
                 promotions = snapshot.val() || {};
                 updatePromotionsTable();
+                showDataLoadedFeedback('Promotions');
+            }, (error) => {
+                console.error('Error loading promotions:', error);
+                showAlert('Failed to load promotions data', 'danger');
             });
 
             // Listen to tournaments
             onValue(ref(database, 'tournaments'), (snapshot) => {
                 tournaments = snapshot.val() || {};
                 updateTournamentsTable();
+                showDataLoadedFeedback('Tournaments');
+            }, (error) => {
+                console.error('Error loading tournaments:', error);
+                showAlert('Failed to load tournaments data', 'danger');
             });
 
             // Listen to users
@@ -1173,18 +1665,30 @@
                 users = snapshot.val() || {};
                 updateUsersTable();
                 updateDashboardStats();
+                showDataLoadedFeedback('Users');
+            }, (error) => {
+                console.error('Error loading users:', error);
+                showAlert('Failed to load users data', 'danger');
             });
 
             // Listen to transactions
             onValue(ref(database, 'transactions'), (snapshot) => {
                 transactions = snapshot.val() || {};
                 updateTransactionsTable();
+                showDataLoadedFeedback('Transactions');
+            }, (error) => {
+                console.error('Error loading transactions:', error);
+                showAlert('Failed to load transactions data', 'danger');
             });
 
             // Listen to add money requests
             onValue(ref(database, 'addMoneyRequests'), (snapshot) => {
                 addMoneyRequests = snapshot.val() || {};
                 updateAddMoneyTable();
+                showDataLoadedFeedback('Add Money Requests');
+            }, (error) => {
+                console.error('Error loading add money requests:', error);
+                showAlert('Failed to load add money requests', 'danger');
             });
 
             // Listen to withdrawals
@@ -1192,13 +1696,48 @@
                 withdrawals = snapshot.val() || {};
                 updateWithdrawalsTable();
                 updateDashboardStats();
+                showDataLoadedFeedback('Withdrawals');
+            }, (error) => {
+                console.error('Error loading withdrawals:', error);
+                showAlert('Failed to load withdrawals data', 'danger');
             });
 
             // Listen to settings
             onValue(ref(database, 'settings'), (snapshot) => {
                 settings = snapshot.val() || {};
                 updateSettingsForm();
+                showDataLoadedFeedback('Settings');
+            }, (error) => {
+                console.error('Error loading settings:', error);
+                showAlert('Failed to load settings data', 'danger');
             });
+        }
+
+        // Show connection status
+        function showConnectionStatus(connected) {
+            // Update navbar to show connection status
+            const navbar = document.querySelector('.navbar-brand');
+            if (connected) {
+                navbar.innerHTML = `
+                    <i class="bi bi-controller me-2"></i>
+                    Gaming Tournament Admin
+                    <span class="realtime-indicator ms-2">
+                        <div class="realtime-dot"></div>
+                        <span style="font-size: 0.7rem;">Connected</span>
+                    </span>
+                `;
+            } else {
+                navbar.innerHTML = `
+                    <i class="bi bi-controller me-2"></i>
+                    Gaming Tournament Admin
+                    <span class="badge bg-danger ms-2">Disconnected</span>
+                `;
+            }
+        }
+
+        // Show data loaded feedback
+        function showDataLoadedFeedback(dataType) {
+            console.log(`✅ ${dataType} loaded successfully`);
         }
 
         // Section navigation
@@ -1237,28 +1776,40 @@
             }
         }
 
-        // Update dashboard stats
+        // Update dashboard stats with professional loading
         function updateDashboardStats() {
+            // Hide skeletons and show real data
+            const hideSkeletonAndShowValue = (skeletonId, valueId, value) => {
+                const skeleton = document.getElementById(skeletonId);
+                const valueEl = document.getElementById(valueId);
+                if (skeleton && valueEl) {
+                    skeleton.classList.add('d-none');
+                    valueEl.classList.remove('d-none');
+                    valueEl.textContent = value;
+                }
+            };
+
             // Total users
-            document.getElementById('totalUsers').textContent = Object.keys(users).length;
+            const totalUsersCount = Object.keys(users).length;
+            hideSkeletonAndShowValue('totalUsersSkeleton', 'totalUsersValue', totalUsersCount);
 
             // Active/upcoming tournaments
             const activeTournaments = Object.values(tournaments).filter(t => 
                 t.status === 'active' || t.status === 'upcoming'
             ).length;
-            document.getElementById('activeTournaments').textContent = activeTournaments;
+            hideSkeletonAndShowValue('activeTournamentsSkeleton', 'activeTournamentsValue', activeTournaments);
 
             // Pending withdrawals
-            const pendingWithdrawals = Object.values(withdrawals).filter(w => 
+            const pendingWithdrawalsCount = Object.values(withdrawals).filter(w => 
                 w.status === 'pending'
             ).length;
-            document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
+            hideSkeletonAndShowValue('pendingWithdrawalsSkeleton', 'pendingWithdrawalsValue', pendingWithdrawalsCount);
 
             // Completed withdrawals
-            const completedWithdrawals = Object.values(withdrawals).filter(w => 
+            const completedWithdrawalsCount = Object.values(withdrawals).filter(w => 
                 w.status === 'completed'
             ).length;
-            document.getElementById('completedWithdrawals').textContent = completedWithdrawals;
+            hideSkeletonAndShowValue('completedWithdrawalsSkeleton', 'completedWithdrawalsValue', completedWithdrawalsCount);
         }
 
         // Game management functions
@@ -1288,18 +1839,19 @@
 
         async function handleGameSubmit() {
             try {
-                showLoader();
                 const gameId = document.getElementById('gameId').value;
                 const name = document.getElementById('gameName').value;
                 const imageFile = document.getElementById('gameImage').files[0];
                 
                 let imageUrl = '';
                 if (imageFile) {
+                    showLoader('Uploading image...');
                     imageUrl = await uploadToImgBB(imageFile);
                 } else if (gameId && games[gameId]) {
                     imageUrl = games[gameId].imageUrl || '';
                 }
 
+                showLoader(gameId ? 'Updating game...' : 'Adding game...');
                 const gameData = {
                     name,
                     imageUrl,
@@ -1309,17 +1861,21 @@
 
                 if (gameId) {
                     await update(ref(database, `games/${gameId}`), gameData);
-                    showAlert('Game updated successfully!', 'success');
+                    showAlert('✅ Game updated successfully!', 'success');
                 } else {
                     await push(ref(database, 'games'), gameData);
-                    showAlert('Game added successfully!', 'success');
+                    showAlert('✅ Game added successfully!', 'success');
                 }
 
                 bootstrap.Modal.getInstance(document.getElementById('gameModal')).hide();
                 hideLoader();
             } catch (error) {
                 console.error('Error saving game:', error);
-                showAlert('Error saving game: ' + error.message, 'danger');
+                if (error.message.includes('Image upload failed')) {
+                    showAlert('❌ Failed to upload image. Please try again with a smaller image.', 'danger');
+                } else {
+                    showAlert('❌ Error saving game: ' + error.message, 'danger');
+                }
                 hideLoader();
             }
         }
@@ -1345,21 +1901,45 @@
             const tbody = document.getElementById('gamesTableBody');
             tbody.innerHTML = '';
 
-            Object.entries(games).forEach(([id, game]) => {
+            const gameEntries = Object.entries(games);
+            
+            if (gameEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-joystick"></i>
+                                <h4>No Games Found</h4>
+                                <p>Add your first game to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            gameEntries.forEach(([id, game]) => {
                 const row = `
                     <tr>
                         <td>
-                            ${game.imageUrl ? `<img src="${game.imageUrl}" class="img-preview" alt="${game.name}">` : 'No image'}
+                            ${game.imageUrl ? `<img src="${game.imageUrl}" class="img-preview" alt="${game.name}">` : 
+                            '<div class="img-preview d-flex align-items-center justify-content-center bg-light"><i class="bi bi-image text-muted"></i></div>'}
                         </td>
-                        <td>${game.name}</td>
-                        <td>${new Date(game.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editGame('${id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteGame('${id}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <strong>${game.name}</strong>
+                        </td>
+                        <td>
+                            <span class="text-muted">${new Date(game.createdAt).toLocaleDateString()}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editGame('${id}')" title="Edit Game">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteGame('${id}')" title="Delete Game">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1660,10 +2240,10 @@
 
         function getStatusBadge(status) {
             const badges = {
-                upcoming: '<span class="badge bg-info">Upcoming</span>',
-                active: '<span class="badge bg-success">Active</span>',
+                upcoming: '<span class="badge bg-info"><span class="status-dot info me-1"></span>Upcoming</span>',
+                active: '<span class="badge bg-success"><span class="status-dot success me-1"></span>Active</span>',
                 completed: '<span class="badge bg-secondary">Completed</span>',
-                cancelled: '<span class="badge bg-danger">Cancelled</span>'
+                cancelled: '<span class="badge bg-danger"><span class="status-dot danger me-1"></span>Cancelled</span>'
             };
             return badges[status] || '<span class="badge bg-warning">Unknown</span>';
         }
@@ -2156,25 +2736,67 @@
             const alertContainer = document.getElementById('alertContainer');
             const alertId = 'alert_' + Date.now();
             
+            // Create professional toast notification
             const alert = document.createElement('div');
             alert.id = alertId;
             alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.style.cssText = 'animation: slideInDown 0.3s ease-out; margin-bottom: 1rem;';
+            
+            // Get appropriate icon for alert type
+            let icon = '';
+            switch(type) {
+                case 'success': icon = '<i class="bi bi-check-circle-fill me-2"></i>'; break;
+                case 'danger': icon = '<i class="bi bi-exclamation-triangle-fill me-2"></i>'; break;
+                case 'warning': icon = '<i class="bi bi-exclamation-circle-fill me-2"></i>'; break;
+                case 'info': icon = '<i class="bi bi-info-circle-fill me-2"></i>'; break;
+            }
+            
             alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-center">
+                    ${icon}
+                    <div class="flex-grow-1">${message}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             `;
             
             alertContainer.appendChild(alert);
             
-            // Auto-hide after 5 seconds
+            // Add slide-in animation
+            setTimeout(() => {
+                alert.style.animation = 'slideInDown 0.3s ease-out';
+            }, 10);
+            
+            // Auto-hide after 6 seconds with fade out
             setTimeout(() => {
                 const alertElement = document.getElementById(alertId);
                 if (alertElement) {
-                    const bsAlert = new bootstrap.Alert(alertElement);
-                    bsAlert.close();
+                    alertElement.style.animation = 'slideOutUp 0.3s ease-in';
+                    setTimeout(() => {
+                        if (alertElement.parentNode) {
+                            const bsAlert = new bootstrap.Alert(alertElement);
+                            bsAlert.close();
+                        }
+                    }, 300);
                 }
-            }, 5000);
+            }, 6000);
         }
+
+        // Add custom animations to CSS
+        const animationStyles = `
+            @keyframes slideInDown {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes slideOutUp {
+                from { transform: translateY(0); opacity: 1; }
+                to { transform: translateY(-100%); opacity: 0; }
+            }
+        `;
+        
+        // Inject animation styles
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = animationStyles;
+        document.head.appendChild(styleSheet);
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
@@ -2184,20 +2806,23 @@
             });
         }
 
-        // Demo data function
+        // Demo data function with enhanced UX
         async function addDemoData() {
-            if (!confirm('This will add demo data to your database. Continue?')) return;
+            const result = confirm('🚀 Add Demo Data?\n\nThis will populate your database with sample games, promotions, and users for testing. Continue?');
+            if (!result) return;
 
             try {
-                showLoader();
+                showLoader('Preparing demo data...');
 
-                // Demo games
+                // Demo games with better data
                 const demoGames = [
-                    { name: 'PUBG Mobile', imageUrl: 'https://via.placeholder.com/150x150?text=PUBG' },
-                    { name: 'Free Fire', imageUrl: 'https://via.placeholder.com/150x150?text=FF' },
-                    { name: 'Call of Duty', imageUrl: 'https://via.placeholder.com/150x150?text=COD' }
+                    { name: 'PUBG Mobile', imageUrl: 'https://via.placeholder.com/150x150/667eea/ffffff?text=PUBG' },
+                    { name: 'Free Fire', imageUrl: 'https://via.placeholder.com/150x150/f59e0b/ffffff?text=FF' },
+                    { name: 'Call of Duty Mobile', imageUrl: 'https://via.placeholder.com/150x150/dc2626/ffffff?text=COD' },
+                    { name: 'Fortnite', imageUrl: 'https://via.placeholder.com/150x150/8b5cf6/ffffff?text=FN' }
                 ];
 
+                showLoader('Adding demo games...');
                 for (const game of demoGames) {
                     await push(ref(database, 'games'), {
                         ...game,
@@ -2209,17 +2834,23 @@
                 // Demo promotions
                 const demoPromotions = [
                     {
-                        title: 'Welcome Bonus',
+                        title: '🎉 Welcome Bonus - Get ₹100 Free!',
                         link: 'https://example.com/welcome',
-                        imageUrl: 'https://via.placeholder.com/300x150?text=Welcome+Bonus'
+                        imageUrl: 'https://via.placeholder.com/400x200/10b981/ffffff?text=Welcome+Bonus'
                     },
                     {
-                        title: 'Referral Program',
+                        title: '👥 Refer Friends & Earn ₹50',
                         link: 'https://example.com/refer',
-                        imageUrl: 'https://via.placeholder.com/300x150?text=Refer+%26+Earn'
+                        imageUrl: 'https://via.placeholder.com/400x200/3b82f6/ffffff?text=Referral+Program'
+                    },
+                    {
+                        title: '🏆 Tournament Special - Double Rewards',
+                        link: 'https://example.com/tournament',
+                        imageUrl: 'https://via.placeholder.com/400x200/f59e0b/ffffff?text=Tournament+Special'
                     }
                 ];
 
+                showLoader('Adding demo promotions...');
                 for (const promotion of demoPromotions) {
                     await push(ref(database, 'promotions'), {
                         ...promotion,
@@ -2228,40 +2859,91 @@
                     });
                 }
 
-                // Demo users
+                // Demo users with realistic data
                 const demoUsers = [
                     {
                         name: 'John Doe',
-                        email: 'john@example.com',
+                        email: 'john.doe@example.com',
                         phone: '+91 9876543210',
                         balance: 500,
                         referralCode: 'JOHN123',
-                        blocked: false
+                        blocked: false,
+                        joinedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
                     },
                     {
                         name: 'Jane Smith',
-                        email: 'jane@example.com',
+                        email: 'jane.smith@example.com',
                         phone: '+91 9876543211',
                         balance: 750,
                         referralCode: 'JANE456',
-                        blocked: false
+                        blocked: false,
+                        joinedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        name: 'Mike Johnson',
+                        email: 'mike.j@example.com',
+                        phone: '+91 9876543212',
+                        balance: 250,
+                        referralCode: 'MIKE789',
+                        blocked: false,
+                        joinedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        name: 'Sarah Wilson',
+                        email: 'sarah.w@example.com',
+                        phone: '+91 9876543213',
+                        balance: 1200,
+                        referralCode: 'SARAH111',
+                        blocked: false,
+                        joinedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
                     }
                 ];
 
+                showLoader('Adding demo users...');
                 for (const user of demoUsers) {
                     await push(ref(database, 'users'), {
                         ...user,
-                        createdAt: new Date().toISOString()
+                        createdAt: user.joinedDate
                     });
                 }
 
-                showAlert('Demo data added successfully!', 'success');
+                // Add some demo transactions
+                showLoader('Adding demo transactions...');
+                const userIds = Object.keys(users);
+                if (userIds.length > 0) {
+                    for (let i = 0; i < 10; i++) {
+                        const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+                        const isCredit = Math.random() > 0.3;
+                        const amount = Math.floor(Math.random() * 500) + 50;
+                        
+                        await push(ref(database, 'transactions'), {
+                            userId: randomUserId,
+                            type: isCredit ? 'credit' : 'debit',
+                            amount: amount,
+                            balanceAfter: Math.floor(Math.random() * 1000) + 100,
+                            description: isCredit ? 'Add Money - Demo' : 'Tournament Entry - Demo',
+                            timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+                        });
+                    }
+                }
+
+                showAlert('🎉 Demo data added successfully! Your admin panel is now populated with sample content.', 'success');
                 hideLoader();
             } catch (error) {
                 console.error('Error adding demo data:', error);
-                showAlert('Error adding demo data: ' + error.message, 'danger');
+                showAlert('❌ Error adding demo data: ' + error.message, 'danger');
                 hideLoader();
             }
+        }
+
+        // Add manual refresh function
+        function refreshData() {
+            showLoader('Refreshing data...');
+            // Re-initialize all data listeners
+            setTimeout(() => {
+                showAlert('📊 Data refreshed successfully!', 'info');
+                hideLoader();
+            }, 1000);
         }
     </script>
 </body>
