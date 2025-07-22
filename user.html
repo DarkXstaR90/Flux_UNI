@@ -78,6 +78,7 @@
             transition: all 0.3s ease;
             border-radius: 0.5rem;
             margin: 0 0.25rem;
+            cursor: pointer;
         }
         
         .nav-item.active,
@@ -692,7 +693,7 @@
             <!-- Contests Section -->
             <section id="contestsSection" class="app-section">
                 <div class="d-flex align-items-center mb-3">
-                    <button class="btn btn-link text-white p-0 me-3" onclick="showSection('home')">
+                    <button class="btn btn-link text-white p-0 me-3" onclick="showUserSection('home')">
                         <i class="bi bi-arrow-left fs-4"></i>
                     </button>
                     <h5 class="text-white mb-0 fw-bold" id="selectedGameTitle">Game Contests</h5>
@@ -822,26 +823,26 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <div class="d-flex">
-                <a href="#" class="nav-item active" onclick="showSection('home')">
+                <div class="nav-item active" onclick="showUserSection('home')">
                     <i class="bi bi-house-fill"></i>
                     <span>Home</span>
-                </a>
-                <a href="#" class="nav-item" onclick="showSection('addMoney')">
+                </div>
+                <div class="nav-item" onclick="showUserSection('addMoney')">
                     <i class="bi bi-cash-stack"></i>
                     <span>Add Money</span>
-                </a>
-                <a href="#" class="nav-item" onclick="showSection('withdraw')">
+                </div>
+                <div class="nav-item" onclick="showUserSection('withdraw')">
                     <i class="bi bi-cash-coin"></i>
                     <span>Withdraw</span>
-                </a>
-                <a href="#" class="nav-item" onclick="showSection('profile')">
+                </div>
+                <div class="nav-item" onclick="showUserSection('profile')">
                     <i class="bi bi-person"></i>
                     <span>Profile</span>
-                </a>
-                <a href="#" class="nav-item" onclick="showSection('refer')">
+                </div>
+                <div class="nav-item" onclick="showUserSection('refer')">
                     <i class="bi bi-share"></i>
                     <span>Refer</span>
-                </a>
+                </div>
             </div>
         </nav>
     </div>
@@ -866,7 +867,7 @@
             <button class="btn btn-outline-primary" onclick="shareApp()">
                 <i class="bi bi-share me-2"></i>Share App
             </button>
-            <button class="btn btn-outline-danger" onclick="logout()">
+            <button class="btn btn-outline-danger" onclick="userLogout()">
                 <i class="bi bi-box-arrow-right me-2"></i>Logout
             </button>
         </div>
@@ -978,6 +979,7 @@
 
         // Global variables
         let currentUser = null;
+        let userData = {};
         let games = {};
         let tournaments = {};
         let promotions = {};
@@ -1074,7 +1076,7 @@
                 document.getElementById('mainApp').style.display = 'block';
                 
                 // Initialize app
-                await initializeApp();
+                await initializeUserApp();
                 
             } catch (error) {
                 hideLoader();
@@ -1106,7 +1108,7 @@
                 const userReferralCode = generateReferralCode(name);
                 
                 // Save user data
-                const userData = {
+                const newUserData = {
                     uid: user.uid,
                     email: email,
                     displayName: name,
@@ -1119,45 +1121,50 @@
                     blocked: false
                 };
                 
-                await set(ref(database, `users/${user.uid}`), userData);
+                await set(ref(database, `users/${user.uid}`), newUserData);
                 
                 // Handle referral bonus
                 if (referralCode) {
-                    // Find referrer
-                    const usersRef = ref(database, 'users');
-                    const usersSnapshot = await get(usersRef);
-                    const allUsers = usersSnapshot.val() || {};
-                    
-                    let referrerId = null;
-                    for (const [uid, userData] of Object.entries(allUsers)) {
-                        if (userData.referralCode === referralCode) {
-                            referrerId = uid;
-                            break;
+                    try {
+                        // Find referrer
+                        const usersRef = ref(database, 'users');
+                        const usersSnapshot = await get(usersRef);
+                        const allUsers = usersSnapshot.val() || {};
+                        
+                        let referrerId = null;
+                        for (const [uid, userData] of Object.entries(allUsers)) {
+                            if (userData.referralCode === referralCode) {
+                                referrerId = uid;
+                                break;
+                            }
                         }
-                    }
-                    
-                    if (referrerId) {
-                        // Get referral bonus from settings
-                        const settingsSnapshot = await get(ref(database, 'settings/referralBonus'));
-                        const bonus = settingsSnapshot.val() || 50;
                         
-                        // Add bonus to referrer
-                        const referrerRef = ref(database, `users/${referrerId}`);
-                        const referrerSnapshot = await get(referrerRef);
-                        const referrerData = referrerSnapshot.val();
-                        
-                        const newBalance = (referrerData.balance || 0) + bonus;
-                        await update(referrerRef, { balance: newBalance });
-                        
-                        // Add transaction record
-                        const transactionRef = push(ref(database, `transactions/history/${referrerId}`));
-                        await set(transactionRef, {
-                            type: 'referral_bonus',
-                            amount: bonus,
-                            balanceAfter: newBalance,
-                            timestamp: Date.now(),
-                            referredUser: user.uid
-                        });
+                        if (referrerId) {
+                            // Get referral bonus from settings
+                            const settingsSnapshot = await get(ref(database, 'settings/referralBonus'));
+                            const bonus = settingsSnapshot.val() || 50;
+                            
+                            // Add bonus to referrer
+                            const referrerRef = ref(database, `users/${referrerId}`);
+                            const referrerSnapshot = await get(referrerRef);
+                            const referrerData = referrerSnapshot.val();
+                            
+                            const newBalance = (referrerData.balance || 0) + bonus;
+                            await update(referrerRef, { balance: newBalance });
+                            
+                            // Add transaction record
+                            const transactionRef = push(ref(database, `transactions/history/${referrerId}`));
+                            await set(transactionRef, {
+                                type: 'referral_bonus',
+                                amount: bonus,
+                                balanceAfter: newBalance,
+                                timestamp: Date.now(),
+                                referredUser: user.uid
+                            });
+                        }
+                    } catch (referralError) {
+                        console.error('Referral bonus error:', referralError);
+                        // Don't fail signup for referral errors
                     }
                 }
                 
@@ -1170,7 +1177,7 @@
                 document.getElementById('mainApp').style.display = 'block';
                 
                 // Initialize app
-                await initializeApp();
+                await initializeUserApp();
                 
             } catch (error) {
                 hideLoader();
@@ -1179,10 +1186,11 @@
         });
 
         // Logout function
-        window.logout = async function() {
+        window.userLogout = async function() {
             try {
                 await signOut(auth);
                 currentUser = null;
+                userData = {};
                 document.getElementById('mainApp').style.display = 'none';
                 document.getElementById('authContainer').style.display = 'flex';
                 document.getElementById('loginForm').style.display = 'block';
@@ -1194,15 +1202,20 @@
         };
 
         // Initialize app
-        async function initializeApp() {
-            await loadUserData();
-            await loadGames();
-            await loadPromotions();
-            await loadTournaments();
-            await loadSettings();
-            
-            // Setup real-time listeners
-            setupRealtimeListeners();
+        async function initializeUserApp() {
+            try {
+                await loadUserData();
+                await loadGames();
+                await loadPromotions();
+                await loadTournaments();
+                await loadSettings();
+                
+                // Setup real-time listeners
+                setupRealtimeListeners();
+            } catch (error) {
+                console.error('App initialization error:', error);
+                showAlert('Error loading app data', 'danger');
+            }
         }
 
         // Load user data
@@ -1211,21 +1224,24 @@
             
             const userRef = ref(database, `users/${currentUser.uid}`);
             onValue(userRef, (snapshot) => {
-                const userData = snapshot.val();
-                if (userData) {
-                    document.getElementById('userBalance').textContent = userData.balance || 0;
-                    document.getElementById('profileName').textContent = userData.displayName || 'User';
-                    document.getElementById('profileEmail').textContent = userData.email;
-                    document.getElementById('morePanelName').textContent = userData.displayName || 'User';
-                    document.getElementById('morePanelUsername').textContent = '@' + (userData.username || 'user');
-                    document.getElementById('referralCode').value = userData.referralCode || '';
-                    
-                    if (userData.photoURL) {
-                        document.getElementById('profilePhoto').src = userData.photoURL;
-                        document.getElementById('morePanelPhoto').src = userData.photoURL;
-                    }
-                }
+                userData = snapshot.val() || {};
+                updateUserUI();
             });
+        }
+
+        // Update user UI
+        function updateUserUI() {
+            document.getElementById('userBalance').textContent = userData.balance || 0;
+            document.getElementById('profileName').textContent = userData.displayName || 'User';
+            document.getElementById('profileEmail').textContent = userData.email || currentUser?.email || '';
+            document.getElementById('morePanelName').textContent = userData.displayName || 'User';
+            document.getElementById('morePanelUsername').textContent = '@' + (userData.username || 'user');
+            document.getElementById('referralCode').value = userData.referralCode || '';
+            
+            if (userData.photoURL) {
+                document.getElementById('profilePhoto').src = userData.photoURL;
+                document.getElementById('morePanelPhoto').src = userData.photoURL;
+            }
         }
 
         // Load games
@@ -1320,182 +1336,221 @@
         }
 
         // Section navigation
-        window.showSection = function(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.app-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionName + 'Section').classList.add('active');
-            
-            // Update bottom nav
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.target.closest('.nav-item').classList.add('active');
-            
-            // Close more panel if open
-            if (document.getElementById('morePanel').classList.contains('active')) {
-                toggleMorePanel();
+        window.showUserSection = function(sectionName) {
+            try {
+                // Hide all sections
+                document.querySelectorAll('.app-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected section
+                const targetSection = document.getElementById(sectionName + 'Section');
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+                
+                // Update bottom nav
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Find and activate the clicked nav item
+                const clickedNav = event?.target?.closest('.nav-item');
+                if (clickedNav) {
+                    clickedNav.classList.add('active');
+                }
+                
+                // Close more panel if open
+                const morePanel = document.getElementById('morePanel');
+                if (morePanel && morePanel.classList.contains('active')) {
+                    toggleMorePanel();
+                }
+            } catch (error) {
+                console.error('Navigation error:', error);
             }
         };
 
         // Select game and show contests
         window.selectGame = function(gameId, gameName) {
-            selectedGameId = gameId;
-            document.getElementById('selectedGameTitle').textContent = gameName + ' Contests';
-            
-            // Show contests section
-            showSection('contests');
-            
-            // Reset to ongoing tab
-            currentTab = 'ongoing';
-            switchContestTab('ongoing');
-            
-            // Render tournaments for selected game
-            renderTournaments();
+            try {
+                selectedGameId = gameId;
+                document.getElementById('selectedGameTitle').textContent = gameName + ' Contests';
+                
+                // Show contests section
+                showUserSection('contests');
+                
+                // Reset to ongoing tab
+                currentTab = 'ongoing';
+                switchContestTab('ongoing');
+                
+                // Render tournaments for selected game
+                renderTournaments();
+            } catch (error) {
+                console.error('Game selection error:', error);
+                showAlert('Error loading game contests', 'danger');
+            }
         };
 
         // Switch contest tab
         window.switchContestTab = function(tab) {
-            currentTab = tab;
-            
-            // Update tab UI
-            document.querySelectorAll('.custom-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Show/hide contest lists
-            document.querySelectorAll('.contest-list').forEach(list => list.style.display = 'none');
-            document.getElementById(tab + 'Contests').style.display = 'block';
-            
-            renderTournaments();
+            try {
+                currentTab = tab;
+                
+                // Update tab UI
+                document.querySelectorAll('.custom-tab').forEach(t => t.classList.remove('active'));
+                if (event?.target) {
+                    event.target.classList.add('active');
+                }
+                
+                // Show/hide contest lists
+                document.querySelectorAll('.contest-list').forEach(list => list.style.display = 'none');
+                const targetList = document.getElementById(tab + 'Contests');
+                if (targetList) {
+                    targetList.style.display = 'block';
+                }
+                
+                renderTournaments();
+            } catch (error) {
+                console.error('Tab switch error:', error);
+            }
         };
 
         // Render tournaments
         function renderTournaments() {
-            if (!selectedGameId || !tournaments[selectedGameId]) {
-                const container = document.getElementById(currentTab + 'Contests');
-                container.innerHTML = '<div class="text-center text-white"><p>No tournaments available</p></div>';
-                return;
-            }
-            
-            const gameTournaments = tournaments[selectedGameId];
-            const filteredTournaments = Object.entries(gameTournaments).filter(([id, tournament]) => {
-                if (currentTab === 'ongoing') return tournament.status === 'ongoing';
-                if (currentTab === 'upcoming') return tournament.status === 'upcoming';
-                if (currentTab === 'completed') return tournament.status === 'completed';
-                return false;
-            });
-            
-            const container = document.getElementById(currentTab + 'Contests');
-            
-            if (filteredTournaments.length === 0) {
-                container.innerHTML = '<div class="text-center text-white"><p>No tournaments found</p></div>';
-                return;
-            }
-            
-            container.innerHTML = filteredTournaments.map(([id, tournament]) => {
-                const joinedCount = tournament.participants ? Object.keys(tournament.participants).length : 0;
-                const progressPercent = (joinedCount / tournament.maxPlayers) * 100;
-                const userJoined = tournament.participants && currentUser && tournament.participants[currentUser.uid];
+            try {
+                if (!selectedGameId || !tournaments[selectedGameId]) {
+                    const container = document.getElementById(currentTab + 'Contests');
+                    if (container) {
+                        container.innerHTML = '<div class="text-center text-white"><p>No tournaments available</p></div>';
+                    }
+                    return;
+                }
                 
-                return `
-                    <div class="tournament-card">
-                        <img src="${tournament.banner || 'https://via.placeholder.com/400x120/667eea/ffffff?text=Tournament'}" class="tournament-banner" alt="${tournament.name}">
-                        
-                        <div class="tournament-stats">
-                            <div class="stat-pill">Prize: ₹${tournament.prizePool}</div>
-                            <div class="stat-pill">Entry: ₹${tournament.entryFee}</div>
-                            <div class="stat-pill">Per Kill: ₹${tournament.perKill}</div>
-                        </div>
-                        
-                        <h5 class="tournament-title">${tournament.name}</h5>
-                        <div class="tournament-id">ID: ${id.substring(0, 8).toUpperCase()}</div>
-                        <div class="tournament-schedule">
-                            <i class="bi bi-calendar-event me-1"></i>
-                            ${new Date(tournament.dateTime).toLocaleString()}
-                        </div>
-                        
-                        ${tournament.tags ? `
-                        <div class="tournament-tags">
-                            ${tournament.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                        ` : ''}
-                        
-                        <div class="progress-container">
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                const gameTournaments = tournaments[selectedGameId];
+                const filteredTournaments = Object.entries(gameTournaments).filter(([id, tournament]) => {
+                    if (currentTab === 'ongoing') return tournament.status === 'ongoing';
+                    if (currentTab === 'upcoming') return tournament.status === 'upcoming';
+                    if (currentTab === 'completed') return tournament.status === 'completed';
+                    return false;
+                });
+                
+                const container = document.getElementById(currentTab + 'Contests');
+                if (!container) return;
+                
+                if (filteredTournaments.length === 0) {
+                    container.innerHTML = '<div class="text-center text-white"><p>No tournaments found</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = filteredTournaments.map(([id, tournament]) => {
+                    const joinedCount = tournament.participants ? Object.keys(tournament.participants).length : 0;
+                    const progressPercent = (joinedCount / tournament.maxPlayers) * 100;
+                    const userJoined = tournament.participants && currentUser && tournament.participants[currentUser.uid];
+                    
+                    return `
+                        <div class="tournament-card">
+                            <img src="${tournament.banner || 'https://via.placeholder.com/400x120/667eea/ffffff?text=Tournament'}" class="tournament-banner" alt="${tournament.name}">
+                            
+                            <div class="tournament-stats">
+                                <div class="stat-pill">Prize: ₹${tournament.prizePool}</div>
+                                <div class="stat-pill">Entry: ₹${tournament.entryFee}</div>
+                                <div class="stat-pill">Per Kill: ₹${tournament.perKill}</div>
                             </div>
-                            <div class="progress-text">${joinedCount}/${tournament.maxPlayers} joined</div>
+                            
+                            <h5 class="tournament-title">${tournament.name}</h5>
+                            <div class="tournament-id">ID: ${id.substring(0, 8).toUpperCase()}</div>
+                            <div class="tournament-schedule">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                ${new Date(tournament.dateTime).toLocaleString()}
+                            </div>
+                            
+                            ${tournament.tags ? `
+                            <div class="tournament-tags">
+                                ${tournament.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                            ` : ''}
+                            
+                            <div class="progress-container">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                                </div>
+                                <div class="progress-text">${joinedCount}/${tournament.maxPlayers} joined</div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="showTournamentDetails('${selectedGameId}', '${id}')">
+                                    <i class="bi bi-info-circle me-1"></i>Details
+                                </button>
+                                ${userJoined ? 
+                                    '<button class="btn btn-join" disabled>Already Joined</button>' :
+                                    (joinedCount >= tournament.maxPlayers ? 
+                                        '<button class="btn btn-join" disabled>Full</button>' :
+                                        `<button class="btn btn-join" onclick="joinTournament('${selectedGameId}', '${id}')">Join Tournament</button>`
+                                    )
+                                }
+                            </div>
                         </div>
-                        
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-primary btn-sm" onclick="showTournamentDetails('${selectedGameId}', '${id}')">
-                                <i class="bi bi-info-circle me-1"></i>Details
-                            </button>
-                            ${userJoined ? 
-                                '<button class="btn btn-join" disabled>Already Joined</button>' :
-                                (joinedCount >= tournament.maxPlayers ? 
-                                    '<button class="btn btn-join" disabled>Full</button>' :
-                                    `<button class="btn btn-join" onclick="joinTournament('${selectedGameId}', '${id}')">Join Tournament</button>`
-                                )
-                            }
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Tournament render error:', error);
+            }
         }
 
         // Show tournament details
         window.showTournamentDetails = function(gameId, tournamentId) {
-            const tournament = tournaments[gameId][tournamentId];
-            const participants = tournament.participants || {};
-            
-            const modalBody = document.getElementById('tournamentModalBody');
-            modalBody.innerHTML = `
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <img src="${tournament.banner || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Tournament'}" class="w-100 rounded" alt="${tournament.name}">
-                    </div>
-                    <div class="col-md-6">
-                        <h5>${tournament.name}</h5>
-                        <p><strong>Tournament ID:</strong> ${tournamentId.substring(0, 8).toUpperCase()}</p>
-                        <p><strong>Entry Fee:</strong> ₹${tournament.entryFee}</p>
-                        <p><strong>Prize Pool:</strong> ₹${tournament.prizePool}</p>
-                        <p><strong>Per Kill:</strong> ₹${tournament.perKill}</p>
-                        <p><strong>Max Players:</strong> ${tournament.maxPlayers}</p>
-                        <p><strong>Date & Time:</strong> ${new Date(tournament.dateTime).toLocaleString()}</p>
-                        ${tournament.roomId ? `<p><strong>Room ID:</strong> ${tournament.roomId}</p>` : ''}
-                        ${tournament.roomPassword ? `<p><strong>Room Password:</strong> ${tournament.roomPassword}</p>` : ''}
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Participants (${Object.keys(participants).length}/${tournament.maxPlayers})</h6>
-                        <div style="max-height: 300px; overflow-y: auto;">
-                            ${Object.keys(participants).length === 0 ? 
-                                '<p class="text-muted">No participants yet</p>' :
-                                Object.entries(participants).map(([uid, participant]) => `
-                                    <div class="participant-item">
-                                        <img src="${participant.photoURL || 'https://via.placeholder.com/40x40/667eea/ffffff?text=User'}" class="participant-photo" alt="${participant.name}">
-                                        <div class="participant-info">
-                                            <h6>${participant.name}</h6>
-                                            <p>@${participant.inGameName}</p>
-                                        </div>
-                                    </div>
-                                `).join('')
-                            }
+            try {
+                const tournament = tournaments[gameId][tournamentId];
+                const participants = tournament.participants || {};
+                
+                const modalBody = document.getElementById('tournamentModalBody');
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <img src="${tournament.banner || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Tournament'}" class="w-100 rounded" alt="${tournament.name}">
                         </div>
+                        <div class="col-md-6">
+                            <h5>${tournament.name}</h5>
+                            <p><strong>Tournament ID:</strong> ${tournamentId.substring(0, 8).toUpperCase()}</p>
+                            <p><strong>Entry Fee:</strong> ₹${tournament.entryFee}</p>
+                            <p><strong>Prize Pool:</strong> ₹${tournament.prizePool}</p>
+                            <p><strong>Per Kill:</strong> ₹${tournament.perKill}</p>
+                            <p><strong>Max Players:</strong> ${tournament.maxPlayers}</p>
+                            <p><strong>Date & Time:</strong> ${new Date(tournament.dateTime).toLocaleString()}</p>
+                            ${tournament.roomId ? `<p><strong>Room ID:</strong> ${tournament.roomId}</p>` : ''}
+                            ${tournament.roomPassword ? `<p><strong>Room Password:</strong> ${tournament.roomPassword}</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Participants (${Object.keys(participants).length}/${tournament.maxPlayers})</h6>
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                ${Object.keys(participants).length === 0 ? 
+                                    '<p class="text-muted">No participants yet</p>' :
+                                    Object.entries(participants).map(([uid, participant]) => `
+                                        <div class="participant-item">
+                                            <img src="${participant.photoURL || 'https://via.placeholder.com/40x40/667eea/ffffff?text=User'}" class="participant-photo" alt="${participant.name}">
+                                            <div class="participant-info">
+                                                <h6>${participant.name}</h6>
+                                                <p>@${participant.inGameName}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')
+                                }
+                            </div>
+                        </div>
+                        ${tournament.description ? `
+                        <div class="col-12 mt-3">
+                            <h6>Description</h6>
+                            <p>${tournament.description}</p>
+                        </div>
+                        ` : ''}
                     </div>
-                    ${tournament.description ? `
-                    <div class="col-12 mt-3">
-                        <h6>Description</h6>
-                        <p>${tournament.description}</p>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-            
-            new bootstrap.Modal(document.getElementById('tournamentModal')).show();
+                `;
+                
+                new bootstrap.Modal(document.getElementById('tournamentModal')).show();
+            } catch (error) {
+                console.error('Tournament details error:', error);
+                showAlert('Error loading tournament details', 'danger');
+            }
         };
 
         // Join tournament
@@ -1511,10 +1566,10 @@
                 const tournament = tournaments[gameId][tournamentId];
                 const userRef = ref(database, `users/${currentUser.uid}`);
                 const userSnapshot = await get(userRef);
-                const userData = userSnapshot.val();
+                const currentUserData = userSnapshot.val();
                 
                 // Check if user has enough balance
-                if (!userData || userData.balance < tournament.entryFee) {
+                if (!currentUserData || currentUserData.balance < tournament.entryFee) {
                     hideLoader();
                     showAlert('Insufficient balance. Please add money to your wallet.', 'warning');
                     return;
@@ -1536,15 +1591,15 @@
                 }
                 
                 // Deduct entry fee from user balance
-                const newBalance = userData.balance - tournament.entryFee;
+                const newBalance = currentUserData.balance - tournament.entryFee;
                 await update(userRef, { balance: newBalance });
                 
                 // Add user to tournament participants
                 const participantData = {
                     uid: currentUser.uid,
-                    name: userData.displayName,
-                    inGameName: userData.inGameName,
-                    photoURL: userData.photoURL || null,
+                    name: currentUserData.displayName,
+                    inGameName: currentUserData.inGameName,
+                    photoURL: currentUserData.photoURL || null,
                     joinedAt: Date.now()
                 };
                 
@@ -1569,30 +1624,35 @@
                 
             } catch (error) {
                 hideLoader();
-                showAlert(error.message, 'danger');
+                console.error('Join tournament error:', error);
+                showAlert('Error joining tournament: ' + error.message, 'danger');
             }
         };
 
         // Toggle more panel
         window.toggleMorePanel = function() {
-            const panel = document.getElementById('morePanel');
-            const overlay = document.getElementById('sidePanelOverlay');
-            
-            panel.classList.toggle('active');
-            overlay.classList.toggle('active');
+            try {
+                const panel = document.getElementById('morePanel');
+                const overlay = document.getElementById('sidePanelOverlay');
+                
+                panel.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } catch (error) {
+                console.error('Toggle panel error:', error);
+            }
         };
 
         // Add money form handler
         document.getElementById('addMoneyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const amount = parseFloat(document.getElementById('addAmount').value);
-            if (amount < 1) {
-                showAlert('Please enter a valid amount', 'warning');
-                return;
-            }
-            
             try {
+                const amount = parseFloat(document.getElementById('addAmount').value);
+                if (amount < 1) {
+                    showAlert('Please enter a valid amount', 'warning');
+                    return;
+                }
+                
                 // Get UPI ID from settings
                 const upiIdSnapshot = await get(ref(database, 'settings/upiId'));
                 const upiId = upiIdSnapshot.val();
@@ -1612,7 +1672,8 @@
                 startPaymentTimer();
                 
             } catch (error) {
-                showAlert(error.message, 'danger');
+                console.error('Add money error:', error);
+                showAlert('Error processing request: ' + error.message, 'danger');
             }
         });
 
@@ -1631,7 +1692,11 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(paymentTimer);
-                    bootstrap.Modal.getInstance(document.getElementById('addMoneyModal')).hide();
+                    const modalElement = document.getElementById('addMoneyModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
                     showAlert('Payment time expired. Please try again.', 'warning');
                 }
                 
@@ -1641,33 +1706,38 @@
 
         // Copy UPI ID
         window.copyUpiId = function() {
-            const upiIdInput = document.getElementById('upiId');
-            upiIdInput.select();
-            document.execCommand('copy');
-            
-            const button = event.target.closest('button');
-            const originalContent = button.innerHTML;
-            button.innerHTML = '<i class="bi bi-check"></i>';
-            button.classList.add('btn-success');
-            
-            setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('btn-success');
-                button.classList.add('btn-outline-primary');
-            }, 2000);
-            
-            showAlert('UPI ID copied to clipboard!');
+            try {
+                const upiIdInput = document.getElementById('upiId');
+                upiIdInput.select();
+                document.execCommand('copy');
+                
+                const button = event.target.closest('button');
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i>';
+                button.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-primary');
+                }, 2000);
+                
+                showAlert('UPI ID copied to clipboard!');
+            } catch (error) {
+                console.error('Copy error:', error);
+                showAlert('Failed to copy UPI ID', 'danger');
+            }
         };
 
         // Submit payment
         window.submitPayment = async function() {
-            const screenshotFile = document.getElementById('paymentScreenshot').files[0];
-            if (!screenshotFile) {
-                showAlert('Please upload payment screenshot', 'warning');
-                return;
-            }
-            
             try {
+                const screenshotFile = document.getElementById('paymentScreenshot').files[0];
+                if (!screenshotFile) {
+                    showAlert('Please upload payment screenshot', 'warning');
+                    return;
+                }
+                
                 showLoader();
                 
                 // Upload screenshot
@@ -1690,7 +1760,11 @@
                 }
                 
                 hideLoader();
-                bootstrap.Modal.getInstance(document.getElementById('addMoneyModal')).hide();
+                const modalElement = document.getElementById('addMoneyModal');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
                 showAlert('Payment request submitted! We will verify and add money to your account within 24 hours.');
                 
                 // Reset form
@@ -1699,7 +1773,8 @@
                 
             } catch (error) {
                 hideLoader();
-                showAlert(error.message, 'danger');
+                console.error('Submit payment error:', error);
+                showAlert('Error submitting payment: ' + error.message, 'danger');
             }
         };
 
@@ -1728,16 +1803,16 @@
                 
                 // Check user balance
                 const userSnapshot = await get(ref(database, `users/${currentUser.uid}`));
-                const userData = userSnapshot.val();
+                const currentUserData = userSnapshot.val();
                 
-                if (!userData || userData.balance < amount) {
+                if (!currentUserData || currentUserData.balance < amount) {
                     hideLoader();
                     showAlert('Insufficient balance', 'warning');
                     return;
                 }
                 
                 // Deduct amount from user balance
-                const newBalance = userData.balance - amount;
+                const newBalance = currentUserData.balance - amount;
                 await update(ref(database, `users/${currentUser.uid}`), { balance: newBalance });
                 
                 // Create withdrawal request
@@ -1771,27 +1846,29 @@
                 
             } catch (error) {
                 hideLoader();
-                showAlert(error.message, 'danger');
+                console.error('Withdraw error:', error);
+                showAlert('Error submitting withdrawal: ' + error.message, 'danger');
             }
         });
 
         // Show edit profile modal
         window.showEditProfile = function() {
-            // Load current user data
-            get(ref(database, `users/${currentUser.uid}`)).then(snapshot => {
-                const userData = snapshot.val();
-                if (userData) {
-                    document.getElementById('editDisplayName').value = userData.displayName || '';
-                    document.getElementById('editUsername').value = userData.username || '';
-                    document.getElementById('editProfilePhoto').src = userData.photoURL || 'https://via.placeholder.com/100x100/667eea/ffffff?text=User';
+            try {
+                // Load current user data
+                document.getElementById('editDisplayName').value = userData.displayName || '';
+                document.getElementById('editUsername').value = userData.username || '';
+                document.getElementById('editProfilePhoto').src = userData.photoURL || 'https://via.placeholder.com/100x100/667eea/ffffff?text=User';
+                
+                new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+                
+                // Close more panel
+                const morePanel = document.getElementById('morePanel');
+                if (morePanel && morePanel.classList.contains('active')) {
+                    toggleMorePanel();
                 }
-            });
-            
-            new bootstrap.Modal(document.getElementById('editProfileModal')).show();
-            
-            // Close more panel
-            if (document.getElementById('morePanel').classList.contains('active')) {
-                toggleMorePanel();
+            } catch (error) {
+                console.error('Edit profile error:', error);
+                showAlert('Error opening profile editor', 'danger');
             }
         };
 
@@ -1806,13 +1883,7 @@
                 const username = document.getElementById('editUsername').value;
                 const photoFile = document.getElementById('newProfilePhoto').files[0];
                 
-                let photoURL = null;
-                const userSnapshot = await get(ref(database, `users/${currentUser.uid}`));
-                const currentUserData = userSnapshot.val();
-                
-                if (currentUserData && currentUserData.photoURL) {
-                    photoURL = currentUserData.photoURL;
-                }
+                let photoURL = userData.photoURL || null;
                 
                 if (photoFile) {
                     photoURL = await uploadImage(photoFile);
@@ -1838,49 +1909,71 @@
                 });
                 
                 hideLoader();
-                bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+                const modalElement = document.getElementById('editProfileModal');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
                 showAlert('Profile updated successfully!');
                 
             } catch (error) {
                 hideLoader();
-                showAlert(error.message, 'danger');
+                console.error('Profile update error:', error);
+                showAlert('Error updating profile: ' + error.message, 'danger');
             }
         });
 
         // Copy referral code
         window.copyReferralCode = function() {
-            const referralCodeInput = document.getElementById('referralCode');
-            referralCodeInput.select();
-            document.execCommand('copy');
-            
-            const button = event.target;
-            const originalContent = button.innerHTML;
-            button.innerHTML = '<i class="bi bi-check"></i>';
-            button.classList.add('copy-success');
-            
-            setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('copy-success');
-            }, 2000);
-            
-            showAlert('Referral code copied to clipboard!');
+            try {
+                const referralCodeInput = document.getElementById('referralCode');
+                referralCodeInput.select();
+                document.execCommand('copy');
+                
+                const button = event.target;
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i>';
+                button.classList.add('copy-success');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('copy-success');
+                }, 2000);
+                
+                showAlert('Referral code copied to clipboard!');
+            } catch (error) {
+                console.error('Copy referral code error:', error);
+                showAlert('Failed to copy referral code', 'danger');
+            }
         };
 
         // Share functions
         window.shareOnWhatsApp = function() {
-            const referralCode = document.getElementById('referralCode').value;
-            const message = `Join Gaming Zone with my referral code ${referralCode} and get ₹50 bonus! Download now: ${window.location.origin}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            try {
+                const referralCode = document.getElementById('referralCode').value;
+                const message = `Join Gaming Zone with my referral code ${referralCode} and get ₹50 bonus! Download now: ${window.location.origin}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            } catch (error) {
+                console.error('WhatsApp share error:', error);
+            }
         };
 
         window.shareOnTelegram = function() {
-            const referralCode = document.getElementById('referralCode').value;
-            const message = `Join Gaming Zone with my referral code ${referralCode} and get ₹50 bonus! Download now: ${window.location.origin}`;
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(message)}`, '_blank');
+            try {
+                const referralCode = document.getElementById('referralCode').value;
+                const message = `Join Gaming Zone with my referral code ${referralCode} and get ₹50 bonus! Download now: ${window.location.origin}`;
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(message)}`, '_blank');
+            } catch (error) {
+                console.error('Telegram share error:', error);
+            }
         };
 
         window.shareOnFacebook = function() {
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}`, '_blank');
+            try {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}`, '_blank');
+            } catch (error) {
+                console.error('Facebook share error:', error);
+            }
         };
 
         // Other functions
@@ -1889,35 +1982,47 @@
         };
 
         window.showSupport = function() {
-            if (settings.supportContact) {
-                window.open(`https://wa.me/${settings.supportContact}`, '_blank');
-            } else {
-                showAlert('Support contact not available', 'warning');
-            }
-            
-            if (document.getElementById('morePanel').classList.contains('active')) {
-                toggleMorePanel();
+            try {
+                if (settings.supportContact) {
+                    window.open(`https://wa.me/${settings.supportContact}`, '_blank');
+                } else {
+                    showAlert('Support contact not available', 'warning');
+                }
+                
+                const morePanel = document.getElementById('morePanel');
+                if (morePanel && morePanel.classList.contains('active')) {
+                    toggleMorePanel();
+                }
+            } catch (error) {
+                console.error('Support error:', error);
             }
         };
 
         window.shareApp = function() {
-            const message = `Check out Gaming Zone - The ultimate gaming tournament platform! Join now: ${window.location.origin}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Gaming Zone',
-                    text: message,
-                    url: window.location.origin
-                });
-            } else {
-                // Fallback to copy
-                navigator.clipboard.writeText(message).then(() => {
-                    showAlert('App link copied to clipboard!');
-                });
-            }
-            
-            if (document.getElementById('morePanel').classList.contains('active')) {
-                toggleMorePanel();
+            try {
+                const message = `Check out Gaming Zone - The ultimate gaming tournament platform! Join now: ${window.location.origin}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Gaming Zone',
+                        text: message,
+                        url: window.location.origin
+                    });
+                } else {
+                    // Fallback to copy
+                    navigator.clipboard.writeText(message).then(() => {
+                        showAlert('App link copied to clipboard!');
+                    }).catch(() => {
+                        showAlert('Failed to copy app link', 'danger');
+                    });
+                }
+                
+                const morePanel = document.getElementById('morePanel');
+                if (morePanel && morePanel.classList.contains('active')) {
+                    toggleMorePanel();
+                }
+            } catch (error) {
+                console.error('Share app error:', error);
             }
         };
 
@@ -1927,9 +2032,10 @@
                 currentUser = user;
                 document.getElementById('authContainer').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                initializeApp();
+                initializeUserApp();
             } else {
                 currentUser = null;
+                userData = {};
                 document.getElementById('mainApp').style.display = 'none';
                 document.getElementById('authContainer').style.display = 'flex';
             }
