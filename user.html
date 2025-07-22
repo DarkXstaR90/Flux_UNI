@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameXZone - Player Panel</title>
+    <title>GameXZone - Tournament Platform</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Font Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Swiper CSS for Slider -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
     
     <style>
         /* ========== GLOBAL STYLES ========== */
@@ -22,9 +24,10 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             overflow-x: hidden;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
         
         /* ========== ANIMATIONS ========== */
@@ -49,6 +52,16 @@
             transform: scale(0.98);
         }
         
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         /* ========== LOADER OVERLAY ========== */
         .loader-overlay {
             position: fixed;
@@ -56,19 +69,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
         }
         
         .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #00d4ff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -80,159 +93,281 @@
         
         /* ========== HEADER STYLES ========== */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 15px 20px;
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
         }
         
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #667eea;
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-decoration: none;
         }
         
         .coin-balance {
             background: linear-gradient(45deg, #ffd700, #ffed4a);
-            color: #333;
+            color: #1a1a2e;
             padding: 8px 15px;
             border-radius: 20px;
             font-weight: 600;
             font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* ========== BOTTOM NAVIGATION ========== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 8px 0;
+        }
+        
+        .nav-item.active {
+            color: #00d4ff;
+            transform: translateY(-2px);
+        }
+        
+        .nav-item:hover {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+        
+        .nav-item i {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
         }
         
         /* ========== MAIN CONTENT ========== */
         .main-content {
-            margin-top: 80px;
+            margin-top: 70px;
             padding: 20px;
-            min-height: calc(100vh - 80px);
+            min-height: calc(100vh - 150px);
+        }
+        
+        /* ========== PROMOTION SLIDER ========== */
+        .promotion-slider {
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .swiper-slide {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .promo-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .promo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 20px;
+        }
+        
+        .swiper-pagination-bullet {
+            background: #00d4ff;
+            opacity: 0.5;
+        }
+        
+        .swiper-pagination-bullet-active {
+            opacity: 1;
+            background: #00d4ff;
         }
         
         /* ========== AUTH STYLES ========== */
         .auth-container {
             max-width: 400px;
             margin: 50px auto;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
         }
         
         .auth-title {
             text-align: center;
-            color: #333;
+            color: white;
             margin-bottom: 30px;
             font-weight: 600;
         }
         
         .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
             border-radius: 10px;
-            border: 2px solid #e9ecef;
             padding: 12px 15px;
             margin-bottom: 15px;
-            transition: border-color 0.3s ease;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
         
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+            color: white;
         }
         
         .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
             border: none;
             border-radius: 10px;
             padding: 12px 25px;
             font-weight: 600;
             width: 100%;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-outline-primary {
-            border: 2px solid #667eea;
-            color: #667eea;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-outline-primary:hover {
-            background: #667eea;
-            color: white;
-            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
         }
         
         /* ========== GAME CARDS ========== */
-        .games-scroll {
-            overflow-x: auto;
-            padding: 20px 0;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        
-        .games-scroll::-webkit-scrollbar {
-            display: none;
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
         
         .game-card {
-            min-width: 200px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 20px;
-            margin-right: 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+            overflow: hidden;
         }
         
         .game-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .game-card:hover::before {
+            left: 100%;
         }
         
         .game-image {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 15px;
             object-fit: cover;
             margin-bottom: 15px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .game-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
         }
         
         .live-count {
-            background: #dc3545;
+            background: linear-gradient(45deg, #ff4757, #ff3742);
             color: white;
             padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
         }
         
         /* ========== CONTEST STYLES ========== */
         .tab-bar {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 5px;
             margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
         }
         
         .tab-btn {
             background: transparent;
             border: none;
-            color: white;
-            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 20px;
             border-radius: 10px;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -240,16 +375,25 @@
         }
         
         .tab-btn.active {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
         }
         
         .contest-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .contest-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
         }
         
         .contest-banner {
@@ -262,18 +406,36 @@
         
         .stats-pills {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .stat-pill {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
             color: white;
             padding: 6px 12px;
             border-radius: 15px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .contest-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .contest-id {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+        
+        .contest-schedule {
+            color: #00d4ff;
+            font-size: 0.9rem;
+            margin: 10px 0;
         }
         
         .contest-tags {
@@ -284,11 +446,12 @@
         }
         
         .tag {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
             padding: 4px 10px;
             border-radius: 10px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
         }
         
@@ -299,76 +462,94 @@
         .progress {
             height: 8px;
             border-radius: 10px;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
         }
         
         .progress-bar {
-            background: linear-gradient(45deg, #28a745, #20c997);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
             border-radius: 10px;
+            transition: width 0.3s ease;
         }
         
         .join-btn {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            border: 2px solid transparent;
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            border: none;
             color: white;
             padding: 12px 25px;
             border-radius: 25px;
             font-weight: 600;
             width: 100%;
             transition: all 0.3s ease;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .join-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+        
+        .join-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         /* ========== MODAL STYLES ========== */
         .modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: white;
         }
         
         .modal-header {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
             color: white;
             border-radius: 20px 20px 0 0;
-            border-bottom: none;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .modal-body {
+            padding: 30px;
         }
         
         .countdown {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: #dc3545;
+            color: #ff4757;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .upi-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px dashed #00d4ff;
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
             margin: 20px 0;
         }
         
-        .upi-box {
-            background: #f8f9fa;
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            margin: 15px 0;
-        }
-        
         .copy-btn {
-            background: #667eea;
+            background: #00d4ff;
             color: white;
             border: none;
             padding: 8px 15px;
             border-radius: 8px;
             font-size: 0.9rem;
             margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #0099cc;
+            transform: scale(1.05);
         }
         
         /* ========== SIDE PANEL ========== */
@@ -378,12 +559,12 @@
             top: 0;
             width: 350px;
             height: 100vh;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
             transition: right 0.3s ease;
             z-index: 1001;
             padding: 20px;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            border-left: 1px solid rgba(0, 212, 255, 0.2);
         }
         
         .side-panel.active {
@@ -396,7 +577,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
@@ -411,7 +592,7 @@
         .profile-section {
             text-align: center;
             padding: 20px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             margin-bottom: 20px;
         }
         
@@ -421,7 +602,18 @@
             border-radius: 50%;
             object-fit: cover;
             margin-bottom: 15px;
-            border: 3px solid #667eea;
+            border: 3px solid #00d4ff;
+        }
+        
+        .profile-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .profile-username {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
         }
         
         .menu-item {
@@ -430,64 +622,40 @@
             padding: 15px 10px;
             border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
             margin-bottom: 5px;
+            color: white;
         }
         
         .menu-item:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
         }
         
         .menu-item i {
             font-size: 1.2rem;
             margin-right: 15px;
-            color: #667eea;
+            color: #00d4ff;
+            width: 25px;
         }
         
-        /* ========== REFER & EARN ========== */
-        .refer-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
+        /* ========== EMPTY STATES ========== */
+        .empty-state {
             text-align: center;
-            margin: 20px 0;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
         }
         
-        .referral-code {
-            background: #f8f9fa;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            padding: 15px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #667eea;
-            margin: 20px 0;
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: rgba(0, 212, 255, 0.3);
         }
         
-        .share-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .share-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
+        .empty-state h5 {
             color: white;
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
+            margin-bottom: 10px;
         }
-        
-        .share-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        .share-btn.telegram { background: #0088cc; }
-        .share-btn.facebook { background: #1877f2; }
-        .share-btn.whatsapp { background: #25d366; }
         
         /* ========== RESPONSIVE DESIGN ========== */
         @media (max-width: 768px) {
@@ -497,7 +665,7 @@
             
             .main-content {
                 padding: 15px;
-                margin-top: 70px;
+                margin-top: 60px;
             }
             
             .side-panel {
@@ -514,6 +682,15 @@
                 font-size: 0.8rem;
                 padding: 6px 12px;
             }
+            
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+            
+            .promo-image {
+                height: 150px;
+            }
         }
         
         /* ========== UTILITY CLASSES ========== */
@@ -522,7 +699,7 @@
         }
         
         .text-gradient {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -532,6 +709,21 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .text-white {
+            color: white !important;
+        }
+        
+        .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
         }
     </style>
 </head>
@@ -553,29 +745,55 @@
                     <i class="bi bi-coin"></i>
                     <span id="coinBalance">0</span>
                 </div>
-                <button class="btn btn-link text-dark p-0" id="notificationBtn">
+                <button class="btn btn-link text-white p-0" id="notificationBtn">
                     <i class="bi bi-bell fs-5"></i>
                 </button>
-                <button class="btn btn-link text-dark p-0" id="menuBtn">
+                <button class="btn btn-link text-white p-0" id="menuBtn">
                     <i class="bi bi-list fs-4"></i>
                 </button>
             </div>
         </div>
     </header>
 
+    <!-- ========== BOTTOM NAVIGATION ========== -->
+    <nav class="bottom-nav">
+        <div class="d-flex">
+            <a href="#" class="nav-item active" id="navHome">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" id="navTournaments">
+                <i class="bi bi-trophy"></i>
+                <span>Tournaments</span>
+            </a>
+            <a href="#" class="nav-item" id="navWallet">
+                <i class="bi bi-wallet2"></i>
+                <span>Wallet</span>
+            </a>
+            <a href="#" class="nav-item" id="navResults">
+                <i class="bi bi-graph-up"></i>
+                <span>Results</span>
+            </a>
+            <a href="#" class="nav-item" id="navProfile">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
     <!-- ========== SIDE PANEL ========== -->
     <div id="sidePanel" class="side-panel">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="mb-0">Menu</h5>
-            <button class="btn btn-link text-dark p-0" id="closePanelBtn">
+            <h5 class="mb-0 text-white">Menu</h5>
+            <button class="btn btn-link text-white p-0" id="closePanelBtn">
                 <i class="bi bi-x-lg fs-4"></i>
             </button>
         </div>
         
         <div class="profile-section">
-            <img id="profilePhoto" src="https://via.placeholder.com/80x80/667eea/white?text=U" alt="Profile" class="profile-photo">
-            <h6 id="displayName">User Name</h6>
-            <small id="username" class="text-muted">@username</small>
+            <img id="profilePhoto" src="https://via.placeholder.com/80x80/00d4ff/white?text=U" alt="Profile" class="profile-photo">
+            <div class="profile-name" id="displayName">User Name</div>
+            <div class="profile-username" id="username">@username</div>
         </div>
         
         <div class="menu-items">
@@ -583,17 +801,17 @@
                 <i class="bi bi-person-gear"></i>
                 <span>Edit Profile</span>
             </div>
-            <div class="menu-item" id="addMoneyBtn">
-                <i class="bi bi-wallet2"></i>
-                <span>Add Money</span>
-            </div>
-            <div class="menu-item" id="withdrawBtn">
-                <i class="bi bi-cash-stack"></i>
-                <span>Withdraw</span>
+            <div class="menu-item" id="transactionHistoryBtn">
+                <i class="bi bi-clock-history"></i>
+                <span>Transaction History</span>
             </div>
             <div class="menu-item" id="referEarnBtn">
                 <i class="bi bi-gift"></i>
                 <span>Refer & Earn</span>
+            </div>
+            <div class="menu-item" id="settingsBtn">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
             </div>
             <div class="menu-item" id="supportBtn">
                 <i class="bi bi-headset"></i>
@@ -616,6 +834,7 @@
         <div id="authScreen" class="fade-in">
             <div class="auth-container">
                 <h2 class="auth-title">Welcome to GameXZone</h2>
+                <p class="text-center text-muted mb-4">Join the ultimate gaming tournament platform</p>
                 
                 <!-- Login Form -->
                 <div id="loginForm">
@@ -624,9 +843,9 @@
                         <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
                         <button type="submit" class="btn btn-primary scale-on-hover scale-on-active">Login</button>
                     </form>
-                    <p class="text-center mt-3">
+                    <p class="text-center mt-3 text-muted">
                         Don't have an account? 
-                        <a href="#" id="showSignupBtn" class="text-decoration-none">Sign Up</a>
+                        <a href="#" id="showSignupBtn" class="text-decoration-none" style="color: #00d4ff;">Sign Up</a>
                     </p>
                 </div>
                 
@@ -635,91 +854,156 @@
                     <form id="signupFormElement">
                         <input type="text" id="signupName" class="form-control" placeholder="Full Name" required>
                         <input type="email" id="signupEmail" class="form-control" placeholder="Email" required>
-                        <input type="password" id="signupPassword" class="form-control" placeholder="Password" required>
+                        <input type="password" id="signupPassword" class="form-control" placeholder="Password (min 6 chars)" required minlength="6">
+                        <input type="text" id="signupReferral" class="form-control" placeholder="Referral Code (Optional)">
                         <button type="submit" class="btn btn-primary scale-on-hover scale-on-active">Sign Up</button>
                     </form>
-                    <p class="text-center mt-3">
+                    <p class="text-center mt-3 text-muted">
                         Already have an account? 
-                        <a href="#" id="showLoginBtn" class="text-decoration-none">Login</a>
+                        <a href="#" id="showLoginBtn" class="text-decoration-none" style="color: #00d4ff;">Login</a>
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- ========== HOME SCREEN (GAMES) ========== -->
+        <!-- ========== HOME SCREEN ========== -->
         <div id="homeScreen" class="hidden">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="text-white mb-0">Popular Games</h3>
-                <button class="btn btn-outline-light btn-sm" id="refreshGamesBtn">
+            <!-- Promotion Slider -->
+            <div class="promotion-slider">
+                <div class="swiper promoSwiper">
+                    <div class="swiper-wrapper" id="promoSlider">
+                        <!-- Promotion slides will be loaded from Firebase -->
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="glass p-3 rounded text-center">
+                        <i class="bi bi-trophy text-warning fs-2"></i>
+                        <div class="text-white fw-bold" id="totalTournaments">0</div>
+                        <small class="text-muted">Live Tournaments</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="glass p-3 rounded text-center">
+                        <i class="bi bi-people text-info fs-2"></i>
+                        <div class="text-white fw-bold" id="totalPlayers">0</div>
+                        <small class="text-muted">Active Players</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Games Section -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-title mb-0">Featured Games</h3>
+                <button class="btn btn-outline-info btn-sm" id="refreshGamesBtn">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
             </div>
             
-            <div class="games-scroll">
-                <div id="gamesList" class="d-flex">
-                    <!-- Games will be loaded here -->
-                </div>
+            <div class="games-grid" id="gamesList">
+                <!-- Games will be loaded from Firebase -->
             </div>
         </div>
 
-        <!-- ========== CONTESTS SCREEN ========== -->
-        <div id="contestsScreen" class="hidden">
+        <!-- ========== TOURNAMENTS SCREEN ========== -->
+        <div id="tournamentsScreen" class="hidden">
             <div class="d-flex align-items-center mb-4">
-                <button class="btn btn-outline-light me-3" id="backToGamesBtn">
+                <button class="btn btn-outline-light me-3" id="backToHomeBtn">
                     <i class="bi bi-arrow-left"></i>
                 </button>
-                <h3 class="text-white mb-0" id="selectedGameName">Game Contests</h3>
+                <h3 class="section-title mb-0" id="selectedGameName">All Tournaments</h3>
             </div>
             
             <!-- Tab Bar -->
             <div class="tab-bar d-flex">
-                <button class="tab-btn active" data-tab="ongoing">Ongoing</button>
+                <button class="tab-btn active" data-tab="live">Live</button>
                 <button class="tab-btn" data-tab="upcoming">Upcoming</button>
-                <button class="tab-btn" data-tab="resulted">Resulted</button>
+                <button class="tab-btn" data-tab="completed">Completed</button>
             </div>
             
-            <!-- Contest Lists -->
-            <div id="contestsList">
-                <!-- Contests will be loaded here -->
+            <!-- Tournaments List -->
+            <div id="tournamentsList">
+                <!-- Tournaments will be loaded from Firebase -->
             </div>
         </div>
 
-        <!-- ========== REFER & EARN SCREEN ========== -->
-        <div id="referEarnScreen" class="hidden">
-            <div class="d-flex align-items-center mb-4">
-                <button class="btn btn-outline-light me-3" id="backFromReferBtn">
-                    <i class="bi bi-arrow-left"></i>
-                </button>
-                <h3 class="text-white mb-0">Refer & Earn</h3>
-            </div>
+        <!-- ========== WALLET SCREEN ========== -->
+        <div id="walletScreen" class="hidden">
+            <h3 class="section-title">My Wallet</h3>
             
-            <div class="refer-container">
-                <h4 class="text-gradient mb-3">Invite Friends & Earn</h4>
-                <p class="text-muted">Share your referral code and earn coins for every friend who joins!</p>
-                
-                <div class="referral-code">
-                    <span id="referralCode">REF123456</span>
-                    <button class="copy-btn" id="copyReferralBtn">
-                        <i class="bi bi-copy"></i>
+            <!-- Balance Card -->
+            <div class="glass p-4 rounded mb-4 text-center">
+                <h2 class="text-gradient mb-2">₹<span id="walletBalance">0</span></h2>
+                <p class="text-muted">Available Balance</p>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary flex-fill" id="addMoneyBtn">
+                        <i class="bi bi-plus-circle me-2"></i>Add Money
+                    </button>
+                    <button class="btn btn-outline-primary flex-fill" id="withdrawBtn">
+                        <i class="bi bi-cash-stack me-2"></i>Withdraw
                     </button>
                 </div>
-                
-                <div class="share-buttons">
-                    <button class="share-btn telegram" id="shareTelegram">
-                        <i class="bi bi-telegram"></i>
-                    </button>
-                    <button class="share-btn facebook" id="shareFacebook">
-                        <i class="bi bi-facebook"></i>
-                    </button>
-                    <button class="share-btn whatsapp" id="shareWhatsapp">
-                        <i class="bi bi-whatsapp"></i>
-                    </button>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <h5 class="text-white mb-3">Recent Transactions</h5>
+            <div id="transactionsList">
+                <!-- Transactions will be loaded from Firebase -->
+            </div>
+        </div>
+
+        <!-- ========== RESULTS SCREEN ========== -->
+        <div id="resultsScreen" class="hidden">
+            <h3 class="section-title">My Results</h3>
+            <div id="resultsList">
+                <!-- Results will be loaded from Firebase -->
+            </div>
+        </div>
+
+        <!-- ========== PROFILE SCREEN ========== -->
+        <div id="profileScreen" class="hidden">
+            <h3 class="section-title">My Profile</h3>
+            
+            <!-- Profile Info -->
+            <div class="glass p-4 rounded mb-4 text-center">
+                <img id="profilePhotoLarge" src="https://via.placeholder.com/100x100/00d4ff/white?text=U" alt="Profile" class="profile-photo mb-3" style="width: 100px; height: 100px;">
+                <h5 class="text-white" id="profileDisplayName">User Name</h5>
+                <p class="text-muted" id="profileUsername">@username</p>
+                <button class="btn btn-outline-primary btn-sm" id="editProfileBtn2">
+                    <i class="bi bi-pencil me-2"></i>Edit Profile
+                </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="row mb-4">
+                <div class="col-4">
+                    <div class="glass p-3 rounded text-center">
+                        <div class="text-white fw-bold" id="totalMatchesPlayed">0</div>
+                        <small class="text-muted">Matches</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="glass p-3 rounded text-center">
+                        <div class="text-white fw-bold" id="totalWins">0</div>
+                        <small class="text-muted">Wins</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="glass p-3 rounded text-center">
+                        <div class="text-white fw-bold" id="winPercentage">0%</div>
+                        <small class="text-muted">Win Rate</small>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- ========== ADD MONEY MODAL ========== -->
+    <!-- ========== MODALS ========== -->
+    <!-- Add Money Modal -->
     <div class="modal fade" id="addMoneyModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -729,21 +1013,21 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Amount</label>
-                        <input type="number" id="addMoneyAmount" class="form-control" placeholder="Enter amount" min="10">
+                        <label class="form-label">Amount (₹)</label>
+                        <input type="number" id="addMoneyAmount" class="form-control" placeholder="Minimum ₹10" min="10">
                     </div>
                     
                     <div class="upi-box">
-                        <h6>Pay to UPI ID:</h6>
+                        <h6 class="text-white">Pay to UPI ID:</h6>
                         <div class="d-flex align-items-center justify-content-center">
-                            <span id="upiId">gamexzone@paytm</span>
+                            <span id="upiId" class="text-white">gamexzone@paytm</span>
                             <button class="copy-btn" id="copyUpiBtn">
                                 <i class="bi bi-copy"></i>
                             </button>
                         </div>
                     </div>
                     
-                    <div class="countdown" id="countdown">02:00</div>
+                    <div class="countdown" id="countdown">05:00</div>
                     
                     <div class="mb-3">
                         <label class="form-label">Upload Payment Screenshot</label>
@@ -758,7 +1042,7 @@
         </div>
     </div>
 
-    <!-- ========== WITHDRAW MODAL ========== -->
+    <!-- Withdraw Modal -->
     <div class="modal fade" id="withdrawModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -768,7 +1052,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Amount</label>
+                        <label class="form-label">Amount (₹)</label>
                         <input type="number" id="withdrawAmount" class="form-control" placeholder="Minimum ₹100" min="100">
                         <small class="text-muted">Minimum withdrawal: ₹<span id="minWithdraw">100</span></small>
                     </div>
@@ -791,7 +1075,7 @@
         </div>
     </div>
 
-    <!-- ========== EDIT PROFILE MODAL ========== -->
+    <!-- Edit Profile Modal -->
     <div class="modal fade" id="editProfileModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -801,7 +1085,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-3">
-                        <img id="editProfilePhoto" src="https://via.placeholder.com/80x80/667eea/white?text=U" alt="Profile" class="profile-photo">
+                        <img id="editProfilePhoto" src="https://via.placeholder.com/80x80/00d4ff/white?text=U" alt="Profile" class="profile-photo">
                     </div>
                     
                     <div class="mb-3">
@@ -822,8 +1106,29 @@
         </div>
     </div>
 
+    <!-- Tournament Details Modal -->
+    <div class="modal fade" id="tournamentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tournamentModalTitle">Tournament Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="tournamentModalBody">
+                    <!-- Tournament details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="joinTournamentBtn">Join Tournament</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
     <!-- Firebase v9 SDK -->
     <script type="module">
@@ -844,7 +1149,12 @@
             get, 
             push, 
             onValue, 
-            off 
+            off,
+            query,
+            orderByChild,
+            equalTo,
+            limitToLast,
+            serverTimestamp
         } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // ========== FIREBASE CONFIG ========== 
@@ -866,86 +1176,67 @@
         // ========== GLOBAL VARIABLES ========== 
         const IMGBB_API_KEY = '3f0392dfdea17a3d11817ce9a9db889a';
         let currentUser = null;
-        let currentGameId = null;
-        let activeTab = 'ongoing';
+        let currentScreen = 'home';
+        let selectedGameId = null;
+        let activeTab = 'live';
         let countdownInterval = null;
+        let dataListeners = {};
 
         // ========== DOM ELEMENTS ========== 
         const loader = document.getElementById('loader');
-        const authScreen = document.getElementById('authScreen');
-        const homeScreen = document.getElementById('homeScreen');
-        const contestsScreen = document.getElementById('contestsScreen');
-        const referEarnScreen = document.getElementById('referEarnScreen');
-        
-        // Auth elements
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        const loginFormElement = document.getElementById('loginFormElement');
-        const signupFormElement = document.getElementById('signupFormElement');
-        const showSignupBtn = document.getElementById('showSignupBtn');
-        const showLoginBtn = document.getElementById('showLoginBtn');
-        
-        // Header elements
-        const coinBalance = document.getElementById('coinBalance');
-        const menuBtn = document.getElementById('menuBtn');
-        const sidePanel = document.getElementById('sidePanel');
-        const panelOverlay = document.getElementById('panelOverlay');
-        const closePanelBtn = document.getElementById('closePanelBtn');
-        
-        // Side panel elements
-        const profilePhoto = document.getElementById('profilePhoto');
-        const displayName = document.getElementById('displayName');
-        const username = document.getElementById('username');
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        const addMoneyBtn = document.getElementById('addMoneyBtn');
-        const withdrawBtn = document.getElementById('withdrawBtn');
-        const referEarnBtn = document.getElementById('referEarnBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        
-        // Game elements
-        const gamesList = document.getElementById('gamesList');
-        const backToGamesBtn = document.getElementById('backToGamesBtn');
-        const selectedGameName = document.getElementById('selectedGameName');
-        const contestsList = document.getElementById('contestsList');
-        const backFromReferBtn = document.getElementById('backFromReferBtn');
+        const screens = {
+            auth: document.getElementById('authScreen'),
+            home: document.getElementById('homeScreen'),
+            tournaments: document.getElementById('tournamentsScreen'),
+            wallet: document.getElementById('walletScreen'),
+            results: document.getElementById('resultsScreen'),
+            profile: document.getElementById('profileScreen')
+        };
+
+        // Navigation elements
+        const navItems = {
+            home: document.getElementById('navHome'),
+            tournaments: document.getElementById('navTournaments'),
+            wallet: document.getElementById('navWallet'),
+            results: document.getElementById('navResults'),
+            profile: document.getElementById('navProfile')
+        };
 
         // ========== UTILITY FUNCTIONS ========== 
         
-        // Show loader
         function showLoader() {
             loader.classList.remove('hidden');
         }
         
-        // Hide loader
         function hideLoader() {
             loader.classList.add('hidden');
         }
         
-        // Show alert
         function showAlert(message, type = 'info') {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 90px; right: 20px; z-index: 1050; max-width: 300px;';
+            alertDiv.style.cssText = 'top: 90px; right: 20px; z-index: 1050; max-width: 350px;';
             alertDiv.innerHTML = `
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             document.body.appendChild(alertDiv);
             
-            // Auto hide after 3 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 3000);
+            }, 5000);
         }
         
-        // Generate username from email
         function generateUsername(email) {
             return email.split('@')[0].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
         }
         
-        // Upload image to ImgBB
+        function generateReferralCode() {
+            return 'REF' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+        
         async function uploadToImgBB(file) {
             const formData = new FormData();
             formData.append('image', file);
@@ -968,45 +1259,120 @@
             }
         }
         
-        // Format countdown timer
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0
+            }).format(amount || 0);
+        }
+        
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // ========== SCREEN NAVIGATION ========== 
+        
+        function showScreen(screenName) {
+            // Hide all screens
+            Object.values(screens).forEach(screen => {
+                if (screen) screen.classList.add('hidden');
+            });
+            
+            // Show selected screen
+            if (screens[screenName]) {
+                screens[screenName].classList.remove('hidden');
+                currentScreen = screenName;
+                
+                // Update navigation
+                updateNavigation(screenName);
+                
+                // Load screen data
+                loadScreenData(screenName);
+            }
+        }
+        
+        function updateNavigation(activeScreen) {
+            Object.entries(navItems).forEach(([screen, element]) => {
+                if (element) {
+                    element.classList.toggle('active', screen === activeScreen);
+                }
+            });
+        }
+        
+        function loadScreenData(screenName) {
+            switch (screenName) {
+                case 'home':
+                    loadHomeData();
+                    break;
+                case 'tournaments':
+                    loadTournaments();
+                    break;
+                case 'wallet':
+                    loadWalletData();
+                    break;
+                case 'results':
+                    loadResults();
+                    break;
+                case 'profile':
+                    loadProfileData();
+                    break;
+            }
+        }
+
         // ========== AUTHENTICATION ========== 
         
-        // Handle signup
-        signupFormElement.addEventListener('submit', async (e) => {
+        document.getElementById('signupFormElement').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader();
             
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
+            const referralCode = document.getElementById('signupReferral').value;
             
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Update profile
                 await updateProfile(user, { displayName: name });
                 
-                // Create user data in database
                 const userData = {
                     displayName: name,
                     email: email,
                     username: generateUsername(email),
-                    coins: 0,
-                    photoURL: 'https://via.placeholder.com/80x80/667eea/white?text=U',
-                    referralCode: `REF${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-                    createdAt: Date.now()
+                    coins: 50, // Welcome bonus
+                    photoURL: `https://via.placeholder.com/80x80/00d4ff/white?text=${name.charAt(0).toUpperCase()}`,
+                    referralCode: generateReferralCode(),
+                    referredBy: referralCode || null,
+                    createdAt: serverTimestamp(),
+                    stats: {
+                        matchesPlayed: 0,
+                        wins: 0,
+                        totalEarnings: 0
+                    }
                 };
                 
                 await set(ref(database, `users/${user.uid}`), userData);
                 
-                showAlert('Account created successfully!', 'success');
+                // Process referral if provided
+                if (referralCode) {
+                    await processReferral(referralCode, user.uid);
+                }
+                
+                showAlert('Account created successfully! Welcome bonus: ₹50', 'success');
                 hideLoader();
             } catch (error) {
                 console.error('Signup error:', error);
@@ -1015,8 +1381,7 @@
             }
         });
         
-        // Handle login
-        loginFormElement.addEventListener('submit', async (e) => {
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoader();
             
@@ -1034,8 +1399,607 @@
             }
         });
         
-        // Handle logout
-        logoutBtn.addEventListener('click', async () => {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                showScreen('home');
+            } else {
+                currentUser = null;
+                cleanupListeners();
+                showScreen('auth');
+            }
+        });
+
+        async function processReferral(referralCode, newUserId) {
+            try {
+                const usersRef = ref(database, 'users');
+                const snapshot = await get(usersRef);
+                
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    for (const [uid, userData] of Object.entries(users)) {
+                        if (userData.referralCode === referralCode) {
+                            // Give bonus to referrer
+                            const referrerCoins = (userData.coins || 0) + 25;
+                            await set(ref(database, `users/${uid}/coins`), referrerCoins);
+                            
+                            // Log referral
+                            await push(ref(database, 'referrals'), {
+                                referrerId: uid,
+                                referredUserId: newUserId,
+                                bonus: 25,
+                                timestamp: serverTimestamp()
+                            });
+                            
+                            break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Referral processing error:', error);
+            }
+        }
+
+        // ========== USER DATA MANAGEMENT ========== 
+        
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                // Setup real-time listener for user data
+                const userRef = ref(database, `users/${currentUser.uid}`);
+                dataListeners.userData = onValue(userRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        updateUserUI(userData);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showAlert('Error loading user data', 'danger');
+            }
+        }
+        
+        function updateUserUI(userData) {
+            // Update coin balance
+            document.getElementById('coinBalance').textContent = userData.coins || 0;
+            document.getElementById('walletBalance').textContent = userData.coins || 0;
+            
+            // Update profile info
+            const profilePhoto = userData.photoURL || `https://via.placeholder.com/80x80/00d4ff/white?text=${userData.displayName?.charAt(0) || 'U'}`;
+            document.getElementById('profilePhoto').src = profilePhoto;
+            document.getElementById('profilePhotoLarge').src = profilePhoto;
+            document.getElementById('editProfilePhoto').src = profilePhoto;
+            
+            document.getElementById('displayName').textContent = userData.displayName || 'User';
+            document.getElementById('profileDisplayName').textContent = userData.displayName || 'User';
+            document.getElementById('editDisplayName').value = userData.displayName || '';
+            
+            const username = userData.username || 'username';
+            document.getElementById('username').textContent = `@${username}`;
+            document.getElementById('profileUsername').textContent = `@${username}`;
+            
+            // Update stats
+            const stats = userData.stats || {};
+            document.getElementById('totalMatchesPlayed').textContent = stats.matchesPlayed || 0;
+            document.getElementById('totalWins').textContent = stats.wins || 0;
+            
+            const winRate = stats.matchesPlayed ? Math.round((stats.wins / stats.matchesPlayed) * 100) : 0;
+            document.getElementById('winPercentage').textContent = `${winRate}%`;
+        }
+
+        // ========== HOME SCREEN DATA ========== 
+        
+        async function loadHomeData() {
+            showLoader();
+            
+            try {
+                // Load promotions
+                await loadPromotions();
+                
+                // Load games
+                await loadGames();
+                
+                // Load quick stats
+                await loadQuickStats();
+                
+                hideLoader();
+            } catch (error) {
+                console.error('Error loading home data:', error);
+                showAlert('Error loading home data', 'danger');
+                hideLoader();
+            }
+        }
+        
+        async function loadPromotions() {
+            const promotionsRef = ref(database, 'promotions');
+            dataListeners.promotions = onValue(promotionsRef, (snapshot) => {
+                const promoSlider = document.getElementById('promoSlider');
+                promoSlider.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    const promotions = Object.values(snapshot.val());
+                    promotions.forEach(promo => {
+                        const slide = document.createElement('div');
+                        slide.className = 'swiper-slide';
+                        slide.innerHTML = `
+                            <img src="${promo.imageUrl}" alt="${promo.title}" class="promo-image">
+                            <div class="promo-overlay">
+                                <h6>${promo.title}</h6>
+                                <p class="mb-0">${promo.description}</p>
+                            </div>
+                        `;
+                        promoSlider.appendChild(slide);
+                    });
+                } else {
+                    // Default promotion
+                    const slide = document.createElement('div');
+                    slide.className = 'swiper-slide';
+                    slide.innerHTML = `
+                        <img src="https://via.placeholder.com/400x180/00d4ff/white?text=Welcome+to+GameXZone" alt="Welcome" class="promo-image">
+                        <div class="promo-overlay">
+                            <h6>Welcome to GameXZone</h6>
+                            <p class="mb-0">Join exciting tournaments and win amazing prizes!</p>
+                        </div>
+                    `;
+                    promoSlider.appendChild(slide);
+                }
+                
+                // Initialize Swiper
+                if (window.promoSwiper) {
+                    window.promoSwiper.destroy();
+                }
+                
+                window.promoSwiper = new Swiper('.promoSwiper', {
+                    slidesPerView: 1,
+                    spaceBetween: 0,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    },
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    loop: true
+                });
+            });
+        }
+        
+        async function loadGames() {
+            const gamesRef = ref(database, 'games');
+            dataListeners.games = onValue(gamesRef, (snapshot) => {
+                const gamesList = document.getElementById('gamesList');
+                gamesList.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    const games = Object.entries(snapshot.val());
+                    games.forEach(([gameId, gameData]) => {
+                        const gameCard = document.createElement('div');
+                        gameCard.className = 'game-card scale-on-hover';
+                        gameCard.innerHTML = `
+                            <img src="${gameData.imageUrl}" alt="${gameData.name}" class="game-image">
+                            <div class="game-name">${gameData.name}</div>
+                            <div class="live-count">
+                                <div class="live-dot"></div>
+                                ${gameData.activePlayers || 0} Live
+                            </div>
+                        `;
+                        
+                        gameCard.addEventListener('click', () => {
+                            selectedGameId = gameId;
+                            document.getElementById('selectedGameName').textContent = gameData.name;
+                            showScreen('tournaments');
+                        });
+                        
+                        gamesList.appendChild(gameCard);
+                    });
+                } else {
+                    gamesList.innerHTML = `
+                        <div class="empty-state col-12">
+                            <i class="bi bi-joystick"></i>
+                            <h5>No Games Available</h5>
+                            <p>Games will be added soon!</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        async function loadQuickStats() {
+            const tournamentsRef = ref(database, 'tournaments');
+            dataListeners.quickStats = onValue(tournamentsRef, (snapshot) => {
+                let totalTournaments = 0;
+                let totalPlayers = 0;
+                
+                if (snapshot.exists()) {
+                    const tournaments = Object.values(snapshot.val());
+                    tournaments.forEach(gameData => {
+                        if (gameData) {
+                            const tournamentList = Object.values(gameData);
+                            tournamentList.forEach(tournament => {
+                                if (tournament.status === 'live' || tournament.status === 'upcoming') {
+                                    totalTournaments++;
+                                    totalPlayers += tournament.joinedPlayers || 0;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                document.getElementById('totalTournaments').textContent = totalTournaments;
+                document.getElementById('totalPlayers').textContent = totalPlayers;
+            });
+        }
+
+        // ========== TOURNAMENTS SCREEN ========== 
+        
+        async function loadTournaments() {
+            showLoader();
+            
+            try {
+                const tournamentsRef = selectedGameId 
+                    ? ref(database, `tournaments/${selectedGameId}`)
+                    : ref(database, 'tournaments');
+                    
+                dataListeners.tournaments = onValue(tournamentsRef, (snapshot) => {
+                    renderTournaments(snapshot.val());
+                });
+                
+                hideLoader();
+            } catch (error) {
+                console.error('Error loading tournaments:', error);
+                showAlert('Error loading tournaments', 'danger');
+                hideLoader();
+            }
+        }
+        
+        function renderTournaments(tournamentsData) {
+            const tournamentsList = document.getElementById('tournamentsList');
+            tournamentsList.innerHTML = '';
+            
+            if (!tournamentsData) {
+                tournamentsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-trophy"></i>
+                        <h5>No Tournaments Available</h5>
+                        <p>Check back later for new tournaments!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let allTournaments = [];
+            
+            if (selectedGameId) {
+                // Single game tournaments
+                allTournaments = Object.entries(tournamentsData).map(([id, data]) => ({...data, id}));
+            } else {
+                // All tournaments
+                Object.values(tournamentsData).forEach(gameData => {
+                    if (gameData) {
+                        Object.entries(gameData).forEach(([id, data]) => {
+                            allTournaments.push({...data, id});
+                        });
+                    }
+                });
+            }
+            
+            // Filter by active tab
+            const filteredTournaments = allTournaments.filter(tournament => {
+                if (activeTab === 'live') return tournament.status === 'live';
+                if (activeTab === 'upcoming') return tournament.status === 'upcoming';
+                if (activeTab === 'completed') return tournament.status === 'completed';
+                return true;
+            });
+            
+            if (filteredTournaments.length === 0) {
+                tournamentsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-trophy"></i>
+                        <h5>No ${activeTab} tournaments</h5>
+                        <p>Check back later for new tournaments!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredTournaments.forEach(tournament => {
+                const progress = tournament.maxPlayers ? (tournament.joinedPlayers / tournament.maxPlayers) * 100 : 0;
+                const spotsLeft = tournament.maxPlayers - (tournament.joinedPlayers || 0);
+                
+                const tournamentCard = document.createElement('div');
+                tournamentCard.className = 'contest-card fade-in';
+                tournamentCard.innerHTML = `
+                    <img src="${tournament.bannerUrl || 'https://via.placeholder.com/400x120/00d4ff/white?text=Tournament'}" 
+                         alt="${tournament.title}" class="contest-banner">
+                    
+                    <div class="stats-pills">
+                        <span class="stat-pill">Prize: ${formatCurrency(tournament.prizePool)}</span>
+                        <span class="stat-pill">Entry: ${formatCurrency(tournament.entryFee)}</span>
+                        <span class="stat-pill">Per Kill: ${formatCurrency(tournament.perKill)}</span>
+                    </div>
+                    
+                    <h5 class="contest-title">${tournament.title}</h5>
+                    <small class="contest-id">ID: ${tournament.id.toUpperCase()}</small>
+                    
+                    <p class="contest-schedule">
+                        <i class="bi bi-clock me-1"></i>
+                        ${formatDateTime(tournament.startTime)}
+                    </p>
+                    
+                    <div class="contest-tags">
+                        <span class="tag">${tournament.mode || 'Squad'}</span>
+                        <span class="tag">${tournament.map || 'Erangel'}</span>
+                        <span class="tag">${tournament.type || 'TPP'}</span>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-white">Players: ${tournament.joinedPlayers || 0}/${tournament.maxPlayers || 100}</small>
+                            <small class="text-info">${spotsLeft} spots left</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    ${tournament.status === 'live' || tournament.status === 'upcoming' ? `
+                        <button class="join-btn scale-on-hover" onclick="window.showTournamentDetails('${tournament.id}')">
+                            <i class="bi bi-controller me-2"></i>
+                            Join Tournament
+                        </button>
+                    ` : `
+                        <button class="join-btn" disabled>
+                            <i class="bi bi-check-circle me-2"></i>
+                            Tournament Ended
+                        </button>
+                    `}
+                `;
+                
+                tournamentsList.appendChild(tournamentCard);
+            });
+        }
+
+        // ========== WALLET SCREEN ========== 
+        
+        async function loadWalletData() {
+            showLoader();
+            
+            try {
+                // Load transactions
+                const transactionsRef = query(
+                    ref(database, 'transactions'),
+                    orderByChild('userId'),
+                    equalTo(currentUser.uid)
+                );
+                
+                dataListeners.transactions = onValue(transactionsRef, (snapshot) => {
+                    renderTransactions(snapshot.val());
+                });
+                
+                hideLoader();
+            } catch (error) {
+                console.error('Error loading wallet data:', error);
+                showAlert('Error loading wallet data', 'danger');
+                hideLoader();
+            }
+        }
+        
+        function renderTransactions(transactionsData) {
+            const transactionsList = document.getElementById('transactionsList');
+            transactionsList.innerHTML = '';
+            
+            if (!transactionsData) {
+                transactionsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-receipt"></i>
+                        <h5>No Transactions</h5>
+                        <p>Your transaction history will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const transactions = Object.entries(transactionsData)
+                .map(([id, data]) => ({...data, id}))
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 10); // Show last 10 transactions
+            
+            transactions.forEach(transaction => {
+                const transactionCard = document.createElement('div');
+                transactionCard.className = 'glass p-3 rounded mb-2';
+                
+                let icon, color, description;
+                if (transaction.type === 'add_money') {
+                    icon = 'bi-plus-circle';
+                    color = 'text-success';
+                    description = 'Money Added';
+                } else if (transaction.type === 'withdraw') {
+                    icon = 'bi-dash-circle';
+                    color = 'text-danger';
+                    description = 'Money Withdrawn';
+                } else if (transaction.type === 'tournament_fee') {
+                    icon = 'bi-trophy';
+                    color = 'text-warning';
+                    description = 'Tournament Entry';
+                } else {
+                    icon = 'bi-arrow-right';
+                    color = 'text-info';
+                    description = transaction.description || 'Transaction';
+                }
+                
+                transactionCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi ${icon} ${color} me-3 fs-5"></i>
+                            <div>
+                                <div class="text-white fw-bold">${description}</div>
+                                <small class="text-muted">${formatDateTime(transaction.timestamp)}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-white fw-bold ${color}">
+                                ${transaction.type === 'withdraw' || transaction.type === 'tournament_fee' ? '-' : '+'}${formatCurrency(transaction.amount)}
+                            </div>
+                            <small class="text-muted">${transaction.status || 'completed'}</small>
+                        </div>
+                    </div>
+                `;
+                
+                transactionsList.appendChild(transactionCard);
+            });
+        }
+
+        // ========== RESULTS SCREEN ========== 
+        
+        async function loadResults() {
+            showLoader();
+            
+            try {
+                const resultsRef = query(
+                    ref(database, 'tournament_results'),
+                    orderByChild('userId'),
+                    equalTo(currentUser.uid)
+                );
+                
+                dataListeners.results = onValue(resultsRef, (snapshot) => {
+                    renderResults(snapshot.val());
+                });
+                
+                hideLoader();
+            } catch (error) {
+                console.error('Error loading results:', error);
+                showAlert('Error loading results', 'danger');
+                hideLoader();
+            }
+        }
+        
+        function renderResults(resultsData) {
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+            
+            if (!resultsData) {
+                resultsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-graph-up"></i>
+                        <h5>No Results</h5>
+                        <p>Your tournament results will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const results = Object.entries(resultsData)
+                .map(([id, data]) => ({...data, id}))
+                .sort((a, b) => b.timestamp - a.timestamp);
+            
+            results.forEach(result => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'contest-card';
+                
+                let positionColor = 'text-muted';
+                if (result.position <= 3) positionColor = 'text-warning';
+                if (result.position === 1) positionColor = 'text-success';
+                
+                resultCard.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="text-white">${result.tournamentTitle}</h6>
+                            <small class="text-muted">${formatDateTime(result.timestamp)}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold ${positionColor}">Position #${result.position}</div>
+                            <small class="text-muted">of ${result.totalPlayers}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-white fw-bold">${result.kills || 0}</div>
+                            <small class="text-muted">Kills</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-success fw-bold">${formatCurrency(result.earnings || 0)}</div>
+                            <small class="text-muted">Earned</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info fw-bold">${result.points || 0}</div>
+                            <small class="text-muted">Points</small>
+                        </div>
+                    </div>
+                `;
+                
+                resultsList.appendChild(resultCard);
+            });
+        }
+
+        // ========== PROFILE SCREEN ========== 
+        
+        async function loadProfileData() {
+            // Profile data is already loaded via real-time listener
+            // This function can be used for additional profile-specific data
+        }
+
+        // ========== EVENT LISTENERS ========== 
+        
+        // Navigation
+        Object.entries(navItems).forEach(([screen, element]) => {
+            if (element) {
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showScreen(screen);
+                });
+            }
+        });
+        
+        // Tournament tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+                btn.classList.add('active');
+                activeTab = btn.dataset.tab;
+                loadTournaments();
+            });
+        });
+        
+        // Back button
+        document.getElementById('backToHomeBtn').addEventListener('click', () => {
+            selectedGameId = null;
+            showScreen('home');
+        });
+        
+        // Auth form toggles
+        document.getElementById('showSignupBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+        });
+        
+        document.getElementById('showLoginBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        });
+        
+        // Side panel
+        document.getElementById('menuBtn').addEventListener('click', openSidePanel);
+        document.getElementById('closePanelBtn').addEventListener('click', closeSidePanel);
+        document.getElementById('panelOverlay').addEventListener('click', closeSidePanel);
+        
+        function openSidePanel() {
+            document.getElementById('sidePanel').classList.add('active');
+            document.getElementById('panelOverlay').classList.add('active');
+        }
+        
+        function closeSidePanel() {
+            document.getElementById('sidePanel').classList.remove('active');
+            document.getElementById('panelOverlay').classList.remove('active');
+        }
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
                 await signOut(auth);
                 showAlert('Logged out successfully!', 'success');
@@ -1046,341 +2010,16 @@
             }
         });
         
-        // Auth state observer
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadUserData();
-                showHomeScreen();
-            } else {
-                currentUser = null;
-                showAuthScreen();
-            }
-        });
-
-        // ========== USER DATA MANAGEMENT ========== 
-        
-        // Load user data
-        async function loadUserData() {
-            if (!currentUser) return;
-            
-            try {
-                const userRef = ref(database, `users/${currentUser.uid}`);
-                const snapshot = await get(userRef);
-                
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    
-                    // Update UI elements
-                    coinBalance.textContent = userData.coins || 0;
-                    profilePhoto.src = userData.photoURL || 'https://via.placeholder.com/80x80/667eea/white?text=U';
-                    displayName.textContent = userData.displayName || 'User';
-                    username.textContent = `@${userData.username || 'username'}`;
-                    
-                    // Update referral code
-                    document.getElementById('referralCode').textContent = userData.referralCode || 'REF123456';
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                showAlert('Error loading user data', 'danger');
-            }
-        }
-
-        // ========== SCREEN NAVIGATION ========== 
-        
-        // Show auth screen
-        function showAuthScreen() {
-            authScreen.classList.remove('hidden');
-            homeScreen.classList.add('hidden');
-            contestsScreen.classList.add('hidden');
-            referEarnScreen.classList.add('hidden');
-        }
-        
-        // Show home screen
-        function showHomeScreen() {
-            authScreen.classList.add('hidden');
-            homeScreen.classList.remove('hidden');
-            contestsScreen.classList.add('hidden');
-            referEarnScreen.classList.add('hidden');
-            loadGames();
-        }
-        
-        // Show contests screen
-        function showContestsScreen(gameId, gameName) {
-            currentGameId = gameId;
-            selectedGameName.textContent = gameName;
-            homeScreen.classList.add('hidden');
-            contestsScreen.classList.remove('hidden');
-            loadContests();
-        }
-        
-        // Show refer & earn screen
-        function showReferEarnScreen() {
-            homeScreen.classList.add('hidden');
-            contestsScreen.classList.add('hidden');
-            referEarnScreen.classList.remove('hidden');
-            closeSidePanel();
-        }
-
-        // ========== GAMES MANAGEMENT ========== 
-        
-        // Load games
-        async function loadGames() {
-            showLoader();
-            
-            try {
-                // Mock games data (in real app, this would come from Firebase)
-                const games = [
-                    {
-                        id: 'pubg',
-                        name: 'PUBG Mobile',
-                        image: 'https://via.placeholder.com/80x80/ff6b6b/white?text=PUBG',
-                        liveCount: 245
-                    },
-                    {
-                        id: 'freefire',
-                        name: 'Free Fire',
-                        image: 'https://via.placeholder.com/80x80/4ecdc4/white?text=FF',
-                        liveCount: 189
-                    },
-                    {
-                        id: 'codm',
-                        name: 'COD Mobile',
-                        image: 'https://via.placeholder.com/80x80/45b7d1/white?text=COD',
-                        liveCount: 156
-                    },
-                    {
-                        id: 'valorant',
-                        name: 'Valorant',
-                        image: 'https://via.placeholder.com/80x80/96ceb4/white?text=VAL',
-                        liveCount: 98
-                    }
-                ];
-                
-                gamesList.innerHTML = '';
-                
-                games.forEach(game => {
-                    const gameCard = document.createElement('div');
-                    gameCard.className = 'game-card scale-on-hover scale-on-active';
-                    gameCard.innerHTML = `
-                        <img src="${game.image}" alt="${game.name}" class="game-image">
-                        <h6 class="mb-2">${game.name}</h6>
-                        <div class="live-count">
-                            <i class="bi bi-circle-fill text-danger me-1"></i>
-                            ${game.liveCount} Live
-                        </div>
-                    `;
-                    
-                    gameCard.addEventListener('click', () => {
-                        showContestsScreen(game.id, game.name);
-                    });
-                    
-                    gamesList.appendChild(gameCard);
-                });
-                
-                hideLoader();
-            } catch (error) {
-                console.error('Error loading games:', error);
-                showAlert('Error loading games', 'danger');
-                hideLoader();
-            }
-        }
-
-        // ========== CONTESTS MANAGEMENT ========== 
-        
-        // Load contests
-        async function loadContests() {
-            if (!currentGameId) return;
-            
-            showLoader();
-            
-            try {
-                // Mock contests data (in real app, this would come from Firebase)
-                const mockContests = [
-                    {
-                        id: 'contest1',
-                        title: 'Ultimate Championship',
-                        banner: 'https://via.placeholder.com/400x120/667eea/white?text=Championship',
-                        prizePool: '₹50,000',
-                        entryFee: '₹100',
-                        perKill: '₹50',
-                        status: 'ongoing',
-                        maxTeams: 100,
-                        joinedTeams: 75,
-                        schedule: '2024-01-15 18:00',
-                        mode: 'Squad',
-                        map: 'Erangel',
-                        type: 'TPP'
-                    },
-                    {
-                        id: 'contest2',
-                        title: 'Weekly Tournament',
-                        banner: 'https://via.placeholder.com/400x120/28a745/white?text=Weekly',
-                        prizePool: '₹25,000',
-                        entryFee: '₹50',
-                        perKill: '₹25',
-                        status: 'upcoming',
-                        maxTeams: 50,
-                        joinedTeams: 23,
-                        schedule: '2024-01-16 20:00',
-                        mode: 'Duo',
-                        map: 'Sanhok',
-                        type: 'FPP'
-                    },
-                    {
-                        id: 'contest3',
-                        title: 'Daily Challenge',
-                        banner: 'https://via.placeholder.com/400x120/dc3545/white?text=Daily',
-                        prizePool: '₹10,000',
-                        entryFee: '₹25',
-                        perKill: '₹10',
-                        status: 'resulted',
-                        maxTeams: 25,
-                        joinedTeams: 25,
-                        schedule: '2024-01-14 19:00',
-                        mode: 'Solo',
-                        map: 'Miramar',
-                        type: 'TPP'
-                    }
-                ];
-                
-                renderContests(mockContests);
-                hideLoader();
-            } catch (error) {
-                console.error('Error loading contests:', error);
-                showAlert('Error loading contests', 'danger');
-                hideLoader();
-            }
-        }
-        
-        // Render contests
-        function renderContests(contests) {
-            const filteredContests = contests.filter(contest => contest.status === activeTab);
-            
-            contestsList.innerHTML = '';
-            
-            if (filteredContests.length === 0) {
-                contestsList.innerHTML = `
-                    <div class="text-center text-white py-5">
-                        <i class="bi bi-trophy fs-1 mb-3"></i>
-                        <h5>No ${activeTab} contests</h5>
-                        <p class="text-muted">Check back later for new tournaments!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            filteredContests.forEach(contest => {
-                const progress = (contest.joinedTeams / contest.maxTeams) * 100;
-                const spotsLeft = contest.maxTeams - contest.joinedTeams;
-                
-                const contestCard = document.createElement('div');
-                contestCard.className = 'contest-card fade-in';
-                contestCard.innerHTML = `
-                    <img src="${contest.banner}" alt="${contest.title}" class="contest-banner">
-                    
-                    <div class="stats-pills">
-                        <span class="stat-pill">Prize: ${contest.prizePool}</span>
-                        <span class="stat-pill">Entry: ${contest.entryFee}</span>
-                        <span class="stat-pill">Per Kill: ${contest.perKill}</span>
-                    </div>
-                    
-                    <h5 class="mb-1">${contest.title}</h5>
-                    <small class="text-muted">ID: ${contest.id.toUpperCase()}</small>
-                    
-                    <p class="mt-2 mb-2">
-                        <i class="bi bi-clock me-1"></i>
-                        ${new Date(contest.schedule).toLocaleString()}
-                    </p>
-                    
-                    <div class="contest-tags">
-                        <span class="tag">${contest.mode}</span>
-                        <span class="tag">${contest.map}</span>
-                        <span class="tag">${contest.type}</span>
-                    </div>
-                    
-                    <div class="progress-section">
-                        <div class="d-flex justify-content-between mb-2">
-                            <small>Teams: ${contest.joinedTeams}/${contest.maxTeams}</small>
-                            <small class="text-success">${spotsLeft} spots left</small>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: ${progress}%"></div>
-                        </div>
-                    </div>
-                    
-                    ${contest.status === 'ongoing' || contest.status === 'upcoming' ? `
-                        <button class="join-btn scale-on-hover scale-on-active" onclick="joinContest('${contest.id}')">
-                            <i class="bi bi-controller me-2"></i>
-                            Join Contest
-                        </button>
-                    ` : `
-                        <button class="btn btn-outline-secondary w-100" disabled>
-                            <i class="bi bi-check-circle me-2"></i>
-                            Contest Ended
-                        </button>
-                    `}
-                `;
-                
-                contestsList.appendChild(contestCard);
-            });
-        }
-        
-        // Join contest function (make it global)
-        window.joinContest = function(contestId) {
-            showAlert('Contest join feature coming soon!', 'info');
-        };
-
-        // ========== TAB MANAGEMENT ========== 
-        
-        // Handle tab clicks
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all tabs
-                document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                btn.classList.add('active');
-                
-                // Update active tab
-                activeTab = btn.dataset.tab;
-                
-                // Reload contests
-                loadContests();
-            });
-        });
-
-        // ========== SIDE PANEL MANAGEMENT ========== 
-        
-        // Open side panel
-        function openSidePanel() {
-            sidePanel.classList.add('active');
-            panelOverlay.classList.add('active');
-        }
-        
-        // Close side panel
-        function closeSidePanel() {
-            sidePanel.classList.remove('active');
-            panelOverlay.classList.remove('active');
-        }
-        
-        // Event listeners for side panel
-        menuBtn.addEventListener('click', openSidePanel);
-        closePanelBtn.addEventListener('click', closeSidePanel);
-        panelOverlay.addEventListener('click', closeSidePanel);
-
-        // ========== ADD MONEY FUNCTIONALITY ========== 
-        
-        addMoneyBtn.addEventListener('click', () => {
+        // Add money
+        document.getElementById('addMoneyBtn').addEventListener('click', () => {
             closeSidePanel();
             const modal = new bootstrap.Modal(document.getElementById('addMoneyModal'));
             modal.show();
             startCountdown();
         });
         
-        // Start countdown timer
         function startCountdown() {
-            let timeLeft = 120; // 2 minutes
+            let timeLeft = 300; // 5 minutes
             const countdownElement = document.getElementById('countdown');
             
             if (countdownInterval) {
@@ -1394,7 +2033,7 @@
                 if (timeLeft < 0) {
                     clearInterval(countdownInterval);
                     countdownElement.textContent = "Time's up!";
-                    countdownElement.style.color = '#dc3545';
+                    countdownElement.style.color = '#ff4757';
                 }
             }, 1000);
         }
@@ -1412,31 +2051,34 @@
             const amount = document.getElementById('addMoneyAmount').value;
             const screenshot = document.getElementById('paymentScreenshot').files[0];
             
-            if (!amount || !screenshot) {
-                showAlert('Please fill all fields', 'warning');
+            if (!amount || amount < 10) {
+                showAlert('Minimum amount is ₹10', 'warning');
+                return;
+            }
+            
+            if (!screenshot) {
+                showAlert('Please upload payment screenshot', 'warning');
                 return;
             }
             
             showLoader();
             
             try {
-                // Upload screenshot to ImgBB
                 const imageUrl = await uploadToImgBB(screenshot);
                 
-                // Save request to Firebase
                 const requestData = {
                     userId: currentUser.uid,
+                    type: 'add_money',
                     amount: parseFloat(amount),
                     screenshotUrl: imageUrl,
                     status: 'pending',
-                    timestamp: Date.now()
+                    timestamp: serverTimestamp()
                 };
                 
-                await push(ref(database, 'transactions/addMoneyRequests'), requestData);
+                await push(ref(database, 'transactions'), requestData);
                 
-                showAlert('Add money request submitted!', 'success');
+                showAlert('Add money request submitted successfully!', 'success');
                 
-                // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('addMoneyModal')).hide();
                 
                 // Reset form
@@ -1450,10 +2092,9 @@
                 hideLoader();
             }
         });
-
-        // ========== WITHDRAW FUNCTIONALITY ========== 
         
-        withdrawBtn.addEventListener('click', async () => {
+        // Withdraw money
+        document.getElementById('withdrawBtn').addEventListener('click', async () => {
             closeSidePanel();
             
             // Load minimum withdraw amount
@@ -1504,17 +2145,17 @@
                 // Save withdraw request
                 const requestData = {
                     userId: currentUser.uid,
+                    type: 'withdraw',
                     amount: parseFloat(amount),
                     upiId: upiId,
                     status: 'pending',
-                    timestamp: Date.now()
+                    timestamp: serverTimestamp()
                 };
                 
-                await push(ref(database, 'transactions/withdrawRequests'), requestData);
+                await push(ref(database, 'transactions'), requestData);
                 
-                showAlert('Withdraw request submitted!', 'success');
+                showAlert('Withdraw request submitted successfully!', 'success');
                 
-                // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
                 
                 // Reset form
@@ -1529,16 +2170,15 @@
                 hideLoader();
             }
         });
-
-        // ========== PROFILE EDIT FUNCTIONALITY ========== 
         
-        editProfileBtn.addEventListener('click', () => {
+        // Edit profile
+        document.getElementById('editProfileBtn').addEventListener('click', () => {
             closeSidePanel();
-            
-            // Pre-fill form with current data
-            document.getElementById('editDisplayName').value = displayName.textContent;
-            document.getElementById('editProfilePhoto').src = profilePhoto.src;
-            
+            const modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            modal.show();
+        });
+        
+        document.getElementById('editProfileBtn2').addEventListener('click', () => {
             const modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
             modal.show();
         });
@@ -1556,34 +2196,29 @@
             showLoader();
             
             try {
-                let photoURL = profilePhoto.src;
+                let photoURL = document.getElementById('profilePhoto').src;
                 
-                // Upload new photo if selected
                 if (newPhoto) {
                     photoURL = await uploadToImgBB(newPhoto);
                 }
                 
-                // Update Firebase Auth profile
                 await updateProfile(currentUser, {
                     displayName: newName,
                     photoURL: photoURL
                 });
                 
-                // Update database
                 const userRef = ref(database, `users/${currentUser.uid}`);
+                const snapshot = await get(userRef);
+                const currentData = snapshot.val();
+                
                 await set(userRef, {
-                    ...userData,
+                    ...currentData,
                     displayName: newName,
                     photoURL: photoURL
                 });
                 
-                // Update UI
-                displayName.textContent = newName;
-                profilePhoto.src = photoURL;
+                showAlert('Profile updated successfully!', 'success');
                 
-                showAlert('Profile updated!', 'success');
-                
-                // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
                 
                 hideLoader();
@@ -1593,102 +2228,46 @@
                 hideLoader();
             }
         });
+        
+        // Tournament details
+        window.showTournamentDetails = function(tournamentId) {
+            // Implementation for showing tournament details and joining
+            showAlert('Tournament join feature coming soon!', 'info');
+        };
 
-        // ========== REFERRAL FUNCTIONALITY ========== 
+        // ========== CLEANUP ========== 
         
-        referEarnBtn.addEventListener('click', showReferEarnScreen);
-        
-        // Copy referral code
-        document.getElementById('copyReferralBtn').addEventListener('click', () => {
-            const referralCode = document.getElementById('referralCode').textContent;
-            navigator.clipboard.writeText(referralCode).then(() => {
-                showAlert('Referral code copied!', 'success');
+        function cleanupListeners() {
+            Object.values(dataListeners).forEach(unsubscribe => {
+                if (typeof unsubscribe === 'function') {
+                    unsubscribe();
+                }
             });
-        });
-        
-        // Share buttons
-        document.getElementById('shareTelegram').addEventListener('click', () => {
-            const referralCode = document.getElementById('referralCode').textContent;
-            const message = `Join GameXZone and use my referral code: ${referralCode}`;
-            window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(message)}`);
-        });
-        
-        document.getElementById('shareFacebook').addEventListener('click', () => {
-            const url = 'https://gamexzone.com';
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
-        });
-        
-        document.getElementById('shareWhatsapp').addEventListener('click', () => {
-            const referralCode = document.getElementById('referralCode').textContent;
-            const message = `Join GameXZone and use my referral code: ${referralCode}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-        });
-
-        // ========== NAVIGATION EVENT LISTENERS ========== 
-        
-        // Auth form toggles
-        showSignupBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
-        });
-        
-        showLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            signupForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-        });
-        
-        // Back buttons
-        backToGamesBtn.addEventListener('click', showHomeScreen);
-        backFromReferBtn.addEventListener('click', showHomeScreen);
-        
-        // Refresh games
-        document.getElementById('refreshGamesBtn').addEventListener('click', loadGames);
-        
-        // Support and share app buttons
-        document.getElementById('supportBtn').addEventListener('click', () => {
-            showAlert('Support feature coming soon!', 'info');
-            closeSidePanel();
-        });
-        
-        document.getElementById('shareAppBtn').addEventListener('click', () => {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'GameXZone',
-                    text: 'Join me on GameXZone for exciting gaming tournaments!',
-                    url: 'https://gamexzone.com'
-                });
-            } else {
-                showAlert('Share feature not supported on this device', 'info');
+            dataListeners = {};
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
             }
-            closeSidePanel();
-        });
+            
+            if (window.promoSwiper) {
+                window.promoSwiper.destroy();
+            }
+        }
 
         // ========== INITIALIZATION ========== 
         
-        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('GameXZone Player Panel loaded');
-            
-            // Hide loader initially
+            console.log('GameXZone Tournament Platform loaded');
             hideLoader();
-            
-            // Add some initial animations
-            setTimeout(() => {
-                document.body.classList.add('fade-in');
-            }, 100);
         });
-
+        
         // ========== ERROR HANDLING ========== 
         
-        // Global error handler
         window.addEventListener('error', (event) => {
             console.error('Global error:', event.error);
             showAlert('An unexpected error occurred', 'danger');
         });
         
-        // Unhandled promise rejection handler
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
             showAlert('An unexpected error occurred', 'danger');
