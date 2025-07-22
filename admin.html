@@ -432,21 +432,7 @@
             transform: scale(1.1);
         }
         
-        /* Professional Auth Container */
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        }
         
-        .auth-card {
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
         
         /* Professional Section Headers */
         .section-header {
@@ -668,53 +654,10 @@
         <div class="loader-text">Processing...</div>
     </div>
 
-    <!-- Auth Container -->
-    <div id="authContainer" class="auth-container">
-        <div class="card auth-card">
-            <div class="card-header text-center">
-                <h4 class="mb-0">
-                    <i class="bi bi-controller me-2"></i>
-                    Gaming Tournament Admin
-                </h4>
-            </div>
-            <div class="card-body">
-                <!-- Setup Form -->
-                <div id="setupForm" class="d-none">
-                    <h5 class="mb-3">Initial Setup</h5>
-                    <form id="adminSetupForm">
-                        <div class="mb-3">
-                            <label class="form-label">Admin Email</label>
-                            <input type="email" class="form-control" id="setupEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="setupPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Complete Setup</button>
-                    </form>
-                </div>
 
-                <!-- Login Form -->
-                <div id="loginForm" class="d-none">
-                    <h5 class="mb-3">Admin Login</h5>
-                    <form id="adminLoginForm">
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" id="loginEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Main App -->
-    <div id="mainApp" class="d-none">
+    <div id="mainApp">
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
@@ -725,10 +668,7 @@
                     <i class="bi bi-controller me-2"></i>
                     Gaming Tournament Admin
                 </a>
-                <button class="btn btn-outline-danger" onclick="logout()">
-                    <i class="bi bi-box-arrow-right me-1"></i>
-                    Logout
-                </button>
+
             </div>
         </nav>
 
@@ -1372,7 +1312,6 @@
     <script type="module">
         // Firebase imports
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
         import { getDatabase, ref, set, get, onValue, push, update, remove, child } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // Firebase configuration
@@ -1388,14 +1327,12 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const database = getDatabase(app);
 
         // ImgBB API Key
         const IMGBB_API_KEY = '3f0392dfdea17a3d11817ce9a9db889a';
 
         // Global variables
-        let currentUser = null;
         let currentSection = 'dashboard';
         let games = {};
         let promotions = {};
@@ -1408,7 +1345,6 @@
 
         // Global functions for window scope
         window.showSection = showSection;
-        window.logout = logout;
         window.openGameModal = openGameModal;
         window.openPromotionModal = openPromotionModal;
         window.openTournamentModal = openTournamentModal;
@@ -1433,53 +1369,15 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            checkSetupStatus();
+            showMainApp();
+            initializeData();
             setupEventListeners();
         });
 
-        // Check if admin setup is complete
-        async function checkSetupStatus() {
-            try {
-                const setupRef = ref(database, 'adminConfig/setupComplete');
-                const snapshot = await get(setupRef);
-                
-                if (snapshot.exists() && snapshot.val() === true) {
-                    showLoginForm();
-                } else {
-                    showSetupForm();
-                }
-            } catch (error) {
-                console.error('Error checking setup status:', error);
-                showSetupForm();
-            }
-        }
 
-        // Show setup form
-        function showSetupForm() {
-            document.getElementById('setupForm').classList.remove('d-none');
-            document.getElementById('loginForm').classList.add('d-none');
-        }
-
-        // Show login form
-        function showLoginForm() {
-            document.getElementById('loginForm').classList.remove('d-none');
-            document.getElementById('setupForm').classList.add('d-none');
-        }
 
         // Setup event listeners
         function setupEventListeners() {
-            // Admin setup form
-            document.getElementById('adminSetupForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await handleAdminSetup();
-            });
-
-            // Admin login form
-            document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await handleAdminLogin();
-            });
-
             // Game form
             document.getElementById('gameForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1503,113 +1401,10 @@
                 e.preventDefault();
                 await handleSettingsSubmit();
             });
-
-            // Auth state listener
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    checkAdminAccess(user);
-                } else {
-                    showAuthContainer();
-                }
-            });
-        }
-
-        // Handle admin setup
-        async function handleAdminSetup() {
-            try {
-                showLoader('Setting up admin account...');
-                const email = document.getElementById('setupEmail').value;
-                const password = document.getElementById('setupPassword').value;
-
-                // Create admin user
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                showLoader('Configuring admin settings...');
-                // Save admin config
-                await set(ref(database, 'adminConfig'), {
-                    setupComplete: true,
-                    adminUid: user.uid,
-                    createdAt: new Date().toISOString()
-                });
-
-                showAlert('🎉 Admin setup completed successfully! Welcome to your admin panel.', 'success');
-                hideLoader();
-            } catch (error) {
-                console.error('Setup error:', error);
-                let errorMessage = 'Setup failed: ';
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage += 'This email is already registered.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage += 'Password should be at least 6 characters.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage += 'Please enter a valid email address.';
-                } else {
-                    errorMessage += error.message;
-                }
-                showAlert(errorMessage, 'danger');
-                hideLoader();
-            }
-        }
-
-        // Handle admin login
-        async function handleAdminLogin() {
-            try {
-                showLoader('Signing in...');
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-
-                await signInWithEmailAndPassword(auth, email, password);
-                showLoader('Loading admin panel...');
-                hideLoader();
-            } catch (error) {
-                console.error('Login error:', error);
-                let errorMessage = 'Login failed: ';
-                if (error.code === 'auth/user-not-found') {
-                    errorMessage += 'No admin account found with this email.';
-                } else if (error.code === 'auth/wrong-password') {
-                    errorMessage += 'Incorrect password.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage += 'Please enter a valid email address.';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage += 'Too many failed attempts. Please try again later.';
-                } else {
-                    errorMessage += error.message;
-                }
-                showAlert(errorMessage, 'danger');
-                hideLoader();
-            }
-        }
-
-        // Check admin access
-        async function checkAdminAccess(user) {
-            try {
-                const adminRef = ref(database, 'adminConfig/adminUid');
-                const snapshot = await get(adminRef);
-                
-                if (snapshot.exists() && snapshot.val() === user.uid) {
-                    currentUser = user;
-                    showMainApp();
-                    initializeData();
-                } else {
-                    showAlert('Access denied. You are not authorized as admin.', 'danger');
-                    await signOut(auth);
-                }
-            } catch (error) {
-                console.error('Error checking admin access:', error);
-                showAlert('Error checking admin access', 'danger');
-                await signOut(auth);
-            }
         }
 
         // Show/Hide UI components
-        function showAuthContainer() {
-            document.getElementById('authContainer').classList.remove('d-none');
-            document.getElementById('mainApp').classList.add('d-none');
-        }
-
         function showMainApp() {
-            document.getElementById('authContainer').classList.add('d-none');
             document.getElementById('mainApp').classList.remove('d-none');
         }
 
@@ -1765,16 +1560,7 @@
             }
         }
 
-        // Logout function
-        async function logout() {
-            try {
-                await signOut(auth);
-                showAlert('Logged out successfully', 'success');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showAlert('Logout failed: ' + error.message, 'danger');
-            }
-        }
+
 
         // Update dashboard stats with professional loading
         function updateDashboardStats() {
