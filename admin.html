@@ -1790,7 +1790,6 @@
 
         async function handlePromotionSubmit() {
             try {
-                showLoader();
                 const promotionId = document.getElementById('promotionId').value;
                 const title = document.getElementById('promotionTitle').value;
                 const link = document.getElementById('promotionLink').value;
@@ -1798,11 +1797,13 @@
                 
                 let imageUrl = '';
                 if (imageFile) {
+                    showLoader('Uploading image...');
                     imageUrl = await uploadToImgBB(imageFile);
                 } else if (promotionId && promotions[promotionId]) {
                     imageUrl = promotions[promotionId].imageUrl || '';
                 }
 
+                showLoader(promotionId ? 'Updating promotion...' : 'Adding promotion...');
                 const promotionData = {
                     title,
                     link,
@@ -1813,17 +1814,21 @@
 
                 if (promotionId) {
                     await update(ref(database, `promotions/${promotionId}`), promotionData);
-                    showAlert('Promotion updated successfully!', 'success');
+                    showAlert('✅ Promotion updated successfully!', 'success');
                 } else {
                     await push(ref(database, 'promotions'), promotionData);
-                    showAlert('Promotion added successfully!', 'success');
+                    showAlert('✅ Promotion added successfully!', 'success');
                 }
 
                 bootstrap.Modal.getInstance(document.getElementById('promotionModal')).hide();
                 hideLoader();
             } catch (error) {
                 console.error('Error saving promotion:', error);
-                showAlert('Error saving promotion: ' + error.message, 'danger');
+                if (error.message.includes('Image upload failed')) {
+                    showAlert('❌ Failed to upload image. Please try again with a smaller image.', 'danger');
+                } else {
+                    showAlert('❌ Error saving promotion: ' + error.message, 'danger');
+                }
                 hideLoader();
             }
         }
@@ -1847,33 +1852,105 @@
 
         function updatePromotionsTable() {
             const tbody = document.getElementById('promotionsTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
-            Object.entries(promotions).forEach(([id, promotion]) => {
+            const promotionEntries = Object.entries(promotions);
+            
+            if (promotionEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-megaphone"></i>
+                                <h4>No Promotions Found</h4>
+                                <p>Add your first promotion to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            promotionEntries.forEach(([id, promotion]) => {
                 const row = `
                     <tr>
                         <td>
-                            ${promotion.imageUrl ? `<img src="${promotion.imageUrl}" class="img-preview" alt="${promotion.title}">` : 'No image'}
+                            ${promotion.imageUrl ? `<img src="${promotion.imageUrl}" class="img-preview" alt="${promotion.title}">` : 
+                            '<div class="img-preview d-flex align-items-center justify-content-center bg-light"><i class="bi bi-image text-muted"></i></div>'}
                         </td>
-                        <td>${promotion.title}</td>
                         <td>
-                            <a href="${promotion.link}" target="_blank" class="btn btn-sm btn-outline-info">
+                            <strong>${promotion.title}</strong>
+                        </td>
+                        <td>
+                            <a href="${promotion.link}" target="_blank" class="btn btn-sm btn-outline-info" title="View Link">
                                 <i class="bi bi-link-45deg"></i> View
                             </a>
                         </td>
-                        <td>${new Date(promotion.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editPromotion('${id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deletePromotion('${id}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <span class="text-muted">${new Date(promotion.createdAt).toLocaleDateString()}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editPromotion('${id}')" title="Edit Promotion">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deletePromotion('${id}')" title="Delete Promotion">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+        }
+
+        // Promotion management functions
+        function openPromotionModal(promotionId = null) {
+            const modal = document.getElementById('promotionModal');
+            const title = document.getElementById('promotionModalTitle');
+            const form = document.getElementById('promotionForm');
+            
+            form.reset();
+            document.getElementById('promotionImagePreview').innerHTML = '';
+            
+            if (promotionId) {
+                title.textContent = 'Edit Promotion';
+                const promotion = promotions[promotionId];
+                document.getElementById('promotionId').value = promotionId;
+                document.getElementById('promotionTitle').value = promotion.title;
+                document.getElementById('promotionLink').value = promotion.link;
+                
+                if (promotion.imageUrl) {
+                    document.getElementById('promotionImagePreview').innerHTML = 
+                        `<img src="${promotion.imageUrl}" class="img-preview" alt="Promotion Image">`;
+                }
+            } else {
+                title.textContent = 'Add Promotion';
+                document.getElementById('promotionId').value = '';
+            }
+        }
+
+        function editPromotion(promotionId) {
+            openPromotionModal(promotionId);
+            new bootstrap.Modal(document.getElementById('promotionModal')).show();
+        }
+
+        async function deletePromotion(promotionId) {
+            if (confirm('Are you sure you want to delete this promotion?')) {
+                try {
+                    showLoader('Deleting promotion...');
+                    await remove(ref(database, `promotions/${promotionId}`));
+                    showAlert('✅ Promotion deleted successfully!', 'success');
+                    hideLoader();
+                } catch (error) {
+                    console.error('Error deleting promotion:', error);
+                    showAlert('❌ Error deleting promotion: ' + error.message, 'danger');
+                    hideLoader();
+                }
+            }
         }
 
         // Tournament management functions
@@ -1911,7 +1988,6 @@
 
         async function handleTournamentSubmit() {
             try {
-                showLoader();
                 const tournamentId = document.getElementById('tournamentId').value;
                 const title = document.getElementById('tournamentTitle').value;
                 const gameId = document.getElementById('tournamentGame').value;
@@ -1926,11 +2002,13 @@
                 
                 let bannerUrl = '';
                 if (bannerFile) {
+                    showLoader('Uploading banner...');
                     bannerUrl = await uploadToImgBB(bannerFile);
                 } else if (tournamentId && tournaments[tournamentId]) {
                     bannerUrl = tournaments[tournamentId].bannerUrl || '';
                 }
 
+                showLoader(tournamentId ? 'Updating tournament...' : 'Adding tournament...');
                 const tournamentData = {
                     title,
                     gameId,
@@ -1949,17 +2027,21 @@
 
                 if (tournamentId) {
                     await update(ref(database, `tournaments/${tournamentId}`), tournamentData);
-                    showAlert('Tournament updated successfully!', 'success');
+                    showAlert('✅ Tournament updated successfully!', 'success');
                 } else {
                     await push(ref(database, 'tournaments'), tournamentData);
-                    showAlert('Tournament added successfully!', 'success');
+                    showAlert('✅ Tournament added successfully!', 'success');
                 }
 
                 bootstrap.Modal.getInstance(document.getElementById('tournamentModal')).hide();
                 hideLoader();
             } catch (error) {
                 console.error('Error saving tournament:', error);
-                showAlert('Error saving tournament: ' + error.message, 'danger');
+                if (error.message.includes('Image upload failed')) {
+                    showAlert('❌ Failed to upload banner. Please try again with a smaller image.', 'danger');
+                } else {
+                    showAlert('❌ Error saving tournament: ' + error.message, 'danger');
+                }
                 hideLoader();
             }
         }
@@ -1983,11 +2065,29 @@
 
         function updateTournamentsTable() {
             const tbody = document.getElementById('tournamentsTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
             const gameFilter = document.getElementById('gameFilter')?.value || '';
+            const tournamentEntries = Object.entries(tournaments);
+            
+            if (tournamentEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-trophy"></i>
+                                <h4>No Tournaments Found</h4>
+                                <p>Add your first tournament to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
-            Object.entries(tournaments).forEach(([id, tournament]) => {
+            tournamentEntries.forEach(([id, tournament]) => {
                 // Apply game filter
                 if (gameFilter && tournament.gameId !== gameFilter) {
                     return;
@@ -1999,25 +2099,52 @@
                 const row = `
                     <tr>
                         <td>
-                            ${tournament.bannerUrl ? `<img src="${tournament.bannerUrl}" class="img-preview" alt="${tournament.title}">` : 'No banner'}
+                            ${tournament.bannerUrl ? `<img src="${tournament.bannerUrl}" class="img-preview" alt="${tournament.title}">` : 
+                            '<div class="img-preview d-flex align-items-center justify-content-center bg-light"><i class="bi bi-image text-muted"></i></div>'}
                         </td>
-                        <td>${tournament.title}</td>
-                        <td>${gameName}</td>
+                        <td>
+                            <strong>${tournament.title}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">${gameName}</span>
+                        </td>
                         <td>₹${tournament.entryFee}</td>
                         <td>₹${tournament.prizePool}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editTournament('${id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTournament('${id}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editTournament('${id}')" title="Edit Tournament">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTournament('${id}')" title="Delete Tournament">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+        }
+
+        function editTournament(tournamentId) {
+            openTournamentModal(tournamentId);
+            new bootstrap.Modal(document.getElementById('tournamentModal')).show();
+        }
+
+        async function deleteTournament(tournamentId) {
+            if (confirm('Are you sure you want to delete this tournament?')) {
+                try {
+                    showLoader('Deleting tournament...');
+                    await remove(ref(database, `tournaments/${tournamentId}`));
+                    showAlert('✅ Tournament deleted successfully!', 'success');
+                    hideLoader();
+                } catch (error) {
+                    console.error('Error deleting tournament:', error);
+                    showAlert('❌ Error deleting tournament: ' + error.message, 'danger');
+                    hideLoader();
+                }
+            }
         }
 
         function filterTournaments() {
@@ -2037,9 +2164,28 @@
         // User management functions
         function updateUsersTable() {
             const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
-            Object.entries(users).forEach(([id, user]) => {
+            const userEntries = Object.entries(users);
+            
+            if (userEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-people"></i>
+                                <h4>No Users Found</h4>
+                                <p>Users will appear here when they register</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            userEntries.forEach(([id, user]) => {
                 const statusBadge = user.blocked ? 
                     '<span class="badge bg-danger">Blocked</span>' : 
                     '<span class="badge bg-success">Active</span>';
@@ -2050,22 +2196,29 @@
                             ${user.photoUrl ? `<img src="${user.photoUrl}" class="img-preview rounded-circle" alt="${user.name}">` : 
                             '<i class="bi bi-person-circle fs-2 text-muted"></i>'}
                         </td>
-                        <td>${user.name || 'N/A'}</td>
+                        <td>
+                            <strong>${user.name || 'N/A'}</strong>
+                        </td>
                         <td>${user.email || 'N/A'}</td>
                         <td>${user.phone || 'N/A'}</td>
-                        <td>₹${user.balance || 0}</td>
+                        <td>
+                            <span class="badge bg-success">₹${user.balance || 0}</span>
+                        </td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewUser('${id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-${user.blocked ? 'success' : 'warning'} me-1" 
-                                    onclick="toggleUserStatus('${id}', ${!user.blocked})">
-                                <i class="bi bi-${user.blocked ? 'unlock' : 'lock'}"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${id}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-info" onclick="viewUser('${id}')" title="View User">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-${user.blocked ? 'success' : 'warning'}" 
+                                        onclick="toggleUserStatus('${id}', ${!user.blocked})" 
+                                        title="${user.blocked ? 'Unblock User' : 'Block User'}">
+                                    <i class="bi bi-${user.blocked ? 'unlock' : 'lock'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${id}')" title="Delete User">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -2126,26 +2279,105 @@
             new bootstrap.Modal(document.getElementById('userModal')).show();
         }
 
+        function viewUser(userId) {
+            const user = users[userId];
+            if (!user) {
+                showAlert('User not found', 'danger');
+                return;
+            }
+            
+            const modalBody = document.getElementById('userModalBody');
+            
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        ${user.photoUrl ? `<img src="${user.photoUrl}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;" alt="${user.name}">` : 
+                        '<i class="bi bi-person-circle" style="font-size: 150px; color: #ccc;"></i>'}
+                        <h5>${user.name || 'N/A'}</h5>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>User ID:</strong></td>
+                                <td>${userId} <i class="bi bi-copy copy-btn" onclick="copyToClipboard('${userId}')"></i></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>${user.email || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Phone:</strong></td>
+                                <td>${user.phone || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Balance:</strong></td>
+                                <td>₹${user.balance || 0}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Referral Code:</strong></td>
+                                <td>${user.referralCode || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Referred By:</strong></td>
+                                <td>${user.referredBy || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>${user.blocked ? '<span class="badge bg-danger">Blocked</span>' : '<span class="badge bg-success">Active</span>'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joined:</strong></td>
+                                <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
         async function toggleUserStatus(userId, block) {
             try {
+                showLoader(block ? 'Blocking user...' : 'Unblocking user...');
                 await update(ref(database, `users/${userId}`), { blocked: block });
-                showAlert(`User ${block ? 'blocked' : 'unblocked'} successfully!`, 'success');
+                showAlert(`✅ User ${block ? 'blocked' : 'unblocked'} successfully!`, 'success');
+                hideLoader();
             } catch (error) {
                 console.error('Error updating user status:', error);
-                showAlert('Error updating user status: ' + error.message, 'danger');
+                showAlert('❌ Error updating user status: ' + error.message, 'danger');
+                hideLoader();
             }
         }
 
         async function deleteUser(userId) {
             if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
                 try {
+                    showLoader('Deleting user...');
                     await remove(ref(database, `users/${userId}`));
-                    showAlert('User deleted successfully!', 'success');
+                    showAlert('✅ User deleted successfully!', 'success');
+                    hideLoader();
                 } catch (error) {
                     console.error('Error deleting user:', error);
-                    showAlert('Error deleting user: ' + error.message, 'danger');
+                    showAlert('❌ Error deleting user: ' + error.message, 'danger');
+                    hideLoader();
                 }
             }
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const tbody = document.getElementById('usersTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
 
         function searchUsers() {
@@ -2166,27 +2398,53 @@
         // Transaction management functions
         function updateTransactionsTable() {
             const tbody = document.getElementById('transactionsTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
-            Object.entries(transactions).forEach(([id, transaction]) => {
+            const transactionEntries = Object.entries(transactions);
+            
+            if (transactionEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-credit-card"></i>
+                                <h4>No Transactions Found</h4>
+                                <p>Transactions will appear here when users make payments</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            transactionEntries.forEach(([id, transaction]) => {
                 const typeClass = transaction.type === 'credit' ? 'text-success' : 'text-danger';
                 const typeIcon = transaction.type === 'credit' ? 'bi-plus-circle' : 'bi-dash-circle';
                 
                 const row = `
                     <tr>
-                        <td>${new Date(transaction.timestamp).toLocaleString()}</td>
-                        <td>${transaction.userId} <i class="bi bi-copy copy-btn" onclick="copyToClipboard('${transaction.userId}')"></i></td>
+                        <td>
+                            <span class="text-muted">${new Date(transaction.timestamp).toLocaleString()}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${transaction.userId}</span>
+                            <i class="bi bi-copy copy-btn" onclick="copyToClipboard('${transaction.userId}')"></i>
+                        </td>
                         <td>
                             <span class="${typeClass}">
                                 <i class="bi ${typeIcon}"></i> ${transaction.type.toUpperCase()}
                             </span>
                         </td>
-                        <td class="${typeClass}">₹${transaction.amount}</td>
+                        <td class="${typeClass}">
+                            <strong>₹${transaction.amount}</strong>
+                        </td>
                         <td>₹${transaction.balanceAfter}</td>
                         <td>
                             ${transaction.screenshotUrl ? 
                                 `<img src="${transaction.screenshotUrl}" class="img-preview" alt="Screenshot" style="cursor: pointer;" onclick="window.open('${transaction.screenshotUrl}', '_blank')">` : 
-                                'N/A'}
+                                '<span class="text-muted">N/A</span>'}
                         </td>
                     </tr>
                 `;
@@ -2212,32 +2470,59 @@
         // Add money requests management
         function updateAddMoneyTable() {
             const tbody = document.getElementById('addmoneyTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
-            Object.entries(addMoneyRequests).forEach(([id, request]) => {
+            const addMoneyEntries = Object.entries(addMoneyRequests);
+            
+            if (addMoneyEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-plus-circle"></i>
+                                <h4>No Add Money Requests</h4>
+                                <p>Add money requests will appear here</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            addMoneyEntries.forEach(([id, request]) => {
                 const statusBadge = getRequestStatusBadge(request.status);
                 const userName = users[request.userId]?.name || 'Unknown User';
                 
                 const row = `
                     <tr>
-                        <td>${userName}</td>
-                        <td>₹${request.amount}</td>
+                        <td>
+                            <strong>${userName}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">₹${request.amount}</span>
+                        </td>
                         <td>
                             ${request.screenshotUrl ? 
                                 `<img src="${request.screenshotUrl}" class="img-preview" alt="Screenshot" style="cursor: pointer;" onclick="window.open('${request.screenshotUrl}', '_blank')">` : 
-                                'No screenshot'}
+                                '<span class="text-muted">No screenshot</span>'}
                         </td>
-                        <td>${new Date(request.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <span class="text-muted">${new Date(request.createdAt).toLocaleDateString()}</span>
+                        </td>
                         <td>${statusBadge}</td>
                         <td>
                             ${request.status === 'pending' ? 
-                                `<button class="btn btn-sm btn-success me-1" onclick="processAddMoney('${id}', 'approve')">
-                                    <i class="bi bi-check"></i> Approve
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="processAddMoney('${id}', 'reject')">
-                                    <i class="bi bi-x"></i> Reject
-                                </button>` : 
-                                'No actions available'}
+                                `<div class="action-buttons">
+                                    <button class="btn btn-sm btn-success" onclick="processAddMoney('${id}', 'approve')" title="Approve Request">
+                                        <i class="bi bi-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="processAddMoney('${id}', 'reject')" title="Reject Request">
+                                        <i class="bi bi-x"></i> Reject
+                                    </button>
+                                </div>` : 
+                                '<span class="text-muted">No actions available</span>'}
                         </td>
                     </tr>
                 `;
@@ -2299,49 +2584,183 @@
 
         function updateWithdrawalTab(status) {
             const tbody = document.getElementById(`${status}WithdrawalsBody`);
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
 
             const filteredWithdrawals = Object.entries(withdrawals).filter(([id, withdrawal]) => 
                 withdrawal.status === status
             );
 
+            if (filteredWithdrawals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <div class="empty-state">
+                                <i class="bi bi-cash-stack"></i>
+                                <h4>No ${status.charAt(0).toUpperCase() + status.slice(1)} Withdrawals</h4>
+                                <p>Withdrawal requests will appear here</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             filteredWithdrawals.forEach(([id, withdrawal]) => {
                 const userName = users[withdrawal.userId]?.name || 'Unknown User';
                 
                 let row = `
                     <tr>
-                        <td>${userName}</td>
-                        <td>₹${withdrawal.amount}</td>
-                        <td>${withdrawal.upiId}</td>
+                        <td><strong>${userName}</strong></td>
+                        <td><span class="badge bg-warning">₹${withdrawal.amount}</span></td>
+                        <td><span class="badge bg-info">${withdrawal.upiId}</span></td>
                 `;
 
                 if (status === 'pending') {
                     row += `
-                        <td>${new Date(withdrawal.createdAt).toLocaleDateString()}</td>
+                        <td><span class="text-muted">${new Date(withdrawal.createdAt).toLocaleDateString()}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-success me-1" onclick="openWithdrawalModal('${id}', 'approve')">
-                                <i class="bi bi-check"></i> Approve
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="openWithdrawalModal('${id}', 'reject')">
-                                <i class="bi bi-x"></i> Reject
-                            </button>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-success" onclick="openWithdrawalModal('${id}', 'approve')" title="Approve Withdrawal">
+                                    <i class="bi bi-check"></i> Approve
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="openWithdrawalModal('${id}', 'reject')" title="Reject Withdrawal">
+                                    <i class="bi bi-x"></i> Reject
+                                </button>
+                            </div>
                         </td>
                     `;
                 } else if (status === 'completed') {
                     row += `
-                        <td>${new Date(withdrawal.completedAt).toLocaleDateString()}</td>
-                        <td>${withdrawal.transactionId || 'N/A'}</td>
+                        <td><span class="text-muted">${new Date(withdrawal.completedAt).toLocaleDateString()}</span></td>
+                        <td><span class="badge bg-success">${withdrawal.transactionId || 'N/A'}</span></td>
                     `;
                 } else if (status === 'rejected') {
                     row += `
-                        <td>${new Date(withdrawal.rejectedAt).toLocaleDateString()}</td>
-                        <td>${withdrawal.rejectionReason || 'No reason provided'}</td>
+                        <td><span class="text-muted">${new Date(withdrawal.rejectedAt).toLocaleDateString()}</span></td>
+                        <td><span class="text-danger">${withdrawal.rejectionReason || 'No reason provided'}</span></td>
                     `;
                 }
 
                 row += '</tr>';
                 tbody.innerHTML += row;
             });
+        }
+
+        function openWithdrawalModal(withdrawalId, action) {
+            const withdrawal = withdrawals[withdrawalId];
+            if (!withdrawal) {
+                showAlert('Withdrawal not found', 'danger');
+                return;
+            }
+            
+            const userName = users[withdrawal.userId]?.name || 'Unknown User';
+            
+            document.getElementById('withdrawalModalTitle').textContent = 
+                action === 'approve' ? 'Approve Withdrawal' : 'Reject Withdrawal';
+            
+            document.getElementById('withdrawalDetails').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>User:</strong> ${userName}<br>
+                    <strong>Amount:</strong> ₹${withdrawal.amount}<br>
+                    <strong>UPI ID:</strong> ${withdrawal.upiId}<br>
+                    <strong>Requested:</strong> ${new Date(withdrawal.createdAt).toLocaleString()}
+                </div>
+            `;
+
+            // Store withdrawal info for processing
+            window.currentWithdrawal = { id: withdrawalId, action, data: withdrawal };
+            
+            // Show/hide form fields based on action
+            const form = document.getElementById('withdrawalForm');
+            if (action === 'approve') {
+                form.classList.remove('d-none');
+                document.getElementById('transactionId').required = true;
+                document.getElementById('rejectionReason').required = false;
+            } else {
+                form.classList.remove('d-none');
+                document.getElementById('transactionId').required = false;
+                document.getElementById('rejectionReason').required = true;
+            }
+
+            new bootstrap.Modal(document.getElementById('withdrawalModal')).show();
+        }
+
+        async function processWithdrawal(action) {
+            try {
+                if (!window.currentWithdrawal) {
+                    showAlert('No withdrawal selected', 'danger');
+                    return;
+                }
+                
+                const { id, data } = window.currentWithdrawal;
+                
+                if (action === 'approve') {
+                    const transactionId = document.getElementById('transactionId').value;
+                    if (!transactionId) {
+                        showAlert('Transaction ID is required for approval', 'warning');
+                        return;
+                    }
+
+                    showLoader('Approving withdrawal...');
+                    await update(ref(database, `withdrawals/${id}`), {
+                        status: 'completed',
+                        transactionId: transactionId,
+                        completedAt: new Date().toISOString()
+                    });
+
+                    // Add transaction record
+                    await push(ref(database, 'transactions'), {
+                        userId: data.userId,
+                        type: 'debit',
+                        amount: data.amount,
+                        balanceAfter: (users[data.userId]?.balance || 0),
+                        description: 'Withdrawal Completed',
+                        timestamp: new Date().toISOString()
+                    });
+
+                    showAlert('✅ Withdrawal approved successfully!', 'success');
+                } else {
+                    const rejectionReason = document.getElementById('rejectionReason').value;
+                    if (!rejectionReason) {
+                        showAlert('Rejection reason is required', 'warning');
+                        return;
+                    }
+
+                    showLoader('Rejecting withdrawal...');
+                    // Refund amount to user
+                    const user = users[data.userId];
+                    const newBalance = (user?.balance || 0) + data.amount;
+                    
+                    await update(ref(database, `users/${data.userId}`), { balance: newBalance });
+
+                    await update(ref(database, `withdrawals/${id}`), {
+                        status: 'rejected',
+                        rejectionReason: rejectionReason,
+                        rejectedAt: new Date().toISOString()
+                    });
+
+                    // Add transaction record for refund
+                    await push(ref(database, 'transactions'), {
+                        userId: data.userId,
+                        type: 'credit',
+                        amount: data.amount,
+                        balanceAfter: newBalance,
+                        description: 'Withdrawal Rejected - Refund',
+                        timestamp: new Date().toISOString()
+                    });
+
+                    showAlert('✅ Withdrawal rejected and amount refunded!', 'success');
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('withdrawalModal')).hide();
+                hideLoader();
+            } catch (error) {
+                console.error('Error processing withdrawal:', error);
+                showAlert('❌ Error processing withdrawal: ' + error.message, 'danger');
+                hideLoader();
+            }
         }
 
         function openWithdrawalModal(withdrawalId, action) {
@@ -2454,26 +2873,29 @@
         // Settings management
         function updateSettingsForm() {
             if (settings) {
-                document.getElementById('appName').value = settings.appName || 'Gaming Tournament';
-                document.getElementById('logoUrl').value = settings.logoUrl || '';
-                document.getElementById('minWithdraw').value = settings.minWithdraw || 100;
-                document.getElementById('referralBonus').value = settings.referralBonus || 50;
-                document.getElementById('supportContact').value = settings.supportContact || '';
-                document.getElementById('upiId').value = settings.upiId || '';
-                document.getElementById('privacyUrl').value = settings.privacyUrl || '';
-                document.getElementById('termsUrl').value = settings.termsUrl || '';
+                const fields = [
+                    'appName', 'logoUrl', 'minWithdraw', 'referralBonus', 
+                    'supportContact', 'upiId', 'privacyUrl', 'termsUrl'
+                ];
+                
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        element.value = settings[field] || element.getAttribute('value') || '';
+                    }
+                });
             }
         }
 
         async function handleSettingsSubmit() {
             try {
-                showLoader();
+                showLoader('Saving settings...');
                 
                 const settingsData = {
                     appName: document.getElementById('appName').value,
                     logoUrl: document.getElementById('logoUrl').value,
-                    minWithdraw: parseFloat(document.getElementById('minWithdraw').value),
-                    referralBonus: parseFloat(document.getElementById('referralBonus').value),
+                    minWithdraw: parseFloat(document.getElementById('minWithdraw').value) || 100,
+                    referralBonus: parseFloat(document.getElementById('referralBonus').value) || 50,
                     supportContact: document.getElementById('supportContact').value,
                     upiId: document.getElementById('upiId').value,
                     privacyUrl: document.getElementById('privacyUrl').value,
@@ -2482,11 +2904,11 @@
                 };
 
                 await set(ref(database, 'settings'), settingsData);
-                showAlert('Settings saved successfully!', 'success');
+                showAlert('✅ Settings saved successfully!', 'success');
                 hideLoader();
             } catch (error) {
                 console.error('Error saving settings:', error);
-                showAlert('Error saving settings: ' + error.message, 'danger');
+                showAlert('❌ Error saving settings: ' + error.message, 'danger');
                 hideLoader();
             }
         }
@@ -2494,11 +2916,61 @@
         // Utility functions
         function getRequestStatusBadge(status) {
             const badges = {
-                pending: '<span class="badge bg-warning">Pending</span>',
-                approved: '<span class="badge bg-success">Approved</span>',
-                rejected: '<span class="badge bg-danger">Rejected</span>'
+                pending: '<span class="badge bg-warning"><span class="status-dot warning me-1"></span>Pending</span>',
+                approved: '<span class="badge bg-success"><span class="status-dot success me-1"></span>Approved</span>',
+                rejected: '<span class="badge bg-danger"><span class="status-dot danger me-1"></span>Rejected</span>'
             };
             return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+        }
+
+        async function processAddMoney(requestId, action) {
+            try {
+                const request = addMoneyRequests[requestId];
+                if (!request) {
+                    showAlert('Request not found', 'danger');
+                    return;
+                }
+                
+                const confirmMessage = action === 'approve' ? 
+                    `Approve add money request for ₹${request.amount}?` : 
+                    `Reject add money request for ₹${request.amount}?`;
+                
+                if (!confirm(confirmMessage)) return;
+
+                showLoader(action === 'approve' ? 'Approving request...' : 'Rejecting request...');
+
+                if (action === 'approve') {
+                    // Update user balance
+                    const user = users[request.userId];
+                    const newBalance = (user?.balance || 0) + request.amount;
+                    
+                    await update(ref(database, `users/${request.userId}`), { balance: newBalance });
+                    
+                    // Add transaction record
+                    await push(ref(database, 'transactions'), {
+                        userId: request.userId,
+                        type: 'credit',
+                        amount: request.amount,
+                        balanceAfter: newBalance,
+                        description: 'Add Money Request Approved',
+                        screenshotUrl: request.screenshotUrl,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+                // Update request status
+                await update(ref(database, `addMoneyRequests/${requestId}`), {
+                    status: action === 'approve' ? 'approved' : 'rejected',
+                    processedAt: new Date().toISOString()
+                });
+
+                showAlert(`✅ Add money request ${action}d successfully!`, 'success');
+                hideLoader();
+            } catch (error) {
+                console.error('Error processing add money request:', error);
+                showAlert('❌ Error processing request: ' + error.message, 'danger');
+                hideLoader();
+            }
         }
 
         async function uploadToImgBB(file) {
