@@ -1,0 +1,1473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>GameXzonE Tournament</title>
+  <meta name="theme-color" content="#e94560">
+  <meta name="description" content="GameXzonE - Discover, join, and compete in online video game tournaments.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --background-color: #16213e;
+      --card-color: #1a1a2e;
+      --primary-color: #e94560;
+      --font-color: #eaeaea;
+      --muted-color: #9aa0a6;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+    }
+
+    html, body {
+      background: radial-gradient(1200px 600px at 80% -20%, rgba(233,69,96,0.12), rgba(0,0,0,0)) fixed, var(--background-color);
+      color: var(--font-color);
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      min-height: 100vh;
+      overscroll-behavior-y: none;
+    }
+
+    a { color: #ff6b81; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .gx-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+      background-color: var(--card-color);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .gx-glow {
+      box-shadow: 0 0 0 1px rgba(233,69,96,0.25), 0 0 30px rgba(233,69,96,0.2);
+    }
+
+    .btn-primary {
+      --bs-btn-bg: var(--primary-color);
+      --bs-btn-border-color: var(--primary-color);
+      --bs-btn-hover-bg: #ff6b81;
+      --bs-btn-hover-border-color: #ff6b81;
+      --bs-btn-focus-shadow-rgb: 233,69,96;
+    }
+
+    .text-muted { color: var(--muted-color) !important; }
+
+    .gx-game-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 8px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    .gx-game-chip.active, .gx-game-chip:hover {
+      background: rgba(233,69,96,0.15);
+      border-color: rgba(233,69,96,0.6);
+    }
+
+    .gx-status-badge {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: .75rem;
+    }
+
+    .gx-progress {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .gx-progress > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-color), #ff6b81);
+    }
+
+    .gx-cover {
+      border-radius: 12px;
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background: #0f1530;
+    }
+
+    .gx-bottom-nav {
+      backdrop-filter: blur(10px);
+      background: rgba(10,10,20,0.85);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .gx-bottom-nav .nav-link {
+      color: #cfd3da;
+    }
+    .gx-bottom-nav .nav-link.active {
+      color: #fff;
+    }
+
+    .gx-avatar {
+      width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.12);
+    }
+
+    .gx-splash {
+      position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(1200px 600px at 80% -20%, rgba(233,69,96,0.12), rgba(0,0,0,0)) fixed, #0f172a;
+      transition: opacity .4s ease, visibility .4s ease;
+    }
+    .gx-splash.hidden { opacity: 0; visibility: hidden; }
+
+    .gx-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.25rem;
+    }
+
+    .gx-divider { border-top: 1px solid rgba(255,255,255,0.08); }
+
+    .form-control, .form-select {
+      background-color: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: rgba(255,255,255,0.06);
+      color: #fff;
+    }
+
+    .modal-content {
+      background-color: #0f1530;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash" class="gx-splash">
+    <div class="text-center">
+      <div class="gx-logo mb-2">
+        <span class="badge rounded-pill text-bg-danger px-2 py-1">GX</span>
+        <span>GameXzonE</span>
+      </div>
+      <div class="text-muted mb-3">Loading tournaments...</div>
+      <div class="spinner-border text-danger" role="status" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;"></div>
+
+  <!-- Main SPA container -->
+  <main id="app-container" class="container py-3" aria-live="polite" aria-busy="false"></main>
+
+  <!-- Bottom Navigation (visible after login) -->
+  <nav id="bottom-nav" class="navbar gx-bottom-nav fixed-bottom d-none">
+    <div class="container px-4">
+      <ul class="nav nav-justified w-100">
+        <li class="nav-item"><a class="nav-link" href="#" data-action="nav-home"><i class="bi bi-house-door-fill fs-5 d-block"></i><small>Home</small></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-action="nav-wallet"><i class="bi bi-wallet2 fs-5 d-block"></i><small>Wallet</small></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-action="nav-leaderboard"><i class="bi bi-trophy-fill fs-5 d-block"></i><small>Ranks</small></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-action="nav-notifications"><i class="bi bi-bell-fill fs-5 d-block"></i><small>Alerts</small></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-action="nav-profile"><i class="bi bi-person-circle fs-5 d-block"></i><small>Profile</small></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Tournament Detail Modal -->
+  <div class="modal fade" id="tournamentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tournament</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="tournament-modal-body">
+          <div class="text-center py-5 text-muted">Loading...</div>
+        </div>
+        <div class="modal-footer" id="tournament-modal-footer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Detail Modal -->
+  <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Player</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="user-modal-body">
+          <div class="text-center py-5 text-muted">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Gateway Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Select Payment Method</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="list-group">
+            <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-gateway="Paytm">
+              <span><i class="bi bi-phone me-2"></i>Paytm</span>
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-gateway="PayPal">
+              <span><i class="bi bi-paypal me-2"></i>PayPal</span>
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-gateway="Razorpay">
+              <span><i class="bi bi-credit-card-2-back me-2"></i>Razorpay</span>
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+          <div class="small text-muted mt-3">These are placeholders. Integration with selected gateway is required.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- App Script (ES Module) -->
+  <script type="module">
+    // =============================
+    // Config
+    // =============================
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import {
+      getAuth, onAuthStateChanged,
+      signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, signOut,
+      updateProfile, updatePassword,
+      setPersistence, browserLocalPersistence, browserSessionPersistence
+    } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import {
+      getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc,
+      getDocs, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion
+    } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyA1SUiEfE1Um_m-9FzVf0xZgoKYDDM5DZA",
+      authDomain: "gamexzone-e856a.firebaseapp.com",
+      databaseURL: "https://gamexzone-e856a-default-rtdb.firebaseio.com",
+      projectId: "gamexzone-e856a",
+      storageBucket: "gamexzone-e856a.firebasestorage.app",
+      messagingSenderId: "773572794276",
+      appId: "1:773572794276:android:1175a39a2efcdbabd9d331"
+    };
+
+    const IMGBB_API_KEY = '3f0392dfdea17a3d11817ce9a9db889a';
+
+    // Initialize Firebase
+    const firebaseApp = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+
+    // =============================
+    // State Management
+    // =============================
+    const appState = {
+      currentView: 'splash',
+      currentUser: null,
+      profile: null,
+      wallet: null,
+      games: [],
+      selectedGameId: 'all',
+      tournaments: [],
+      featured: [],
+      upcoming: [],
+      live: [],
+      transactions: [],
+      leaderboard: [],
+      notifications: [],
+      otpPending: null,
+      authTab: 'login',
+      leaderboardGameId: 'all'
+    };
+
+    // =============================
+    // Utilities
+    // =============================
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    const formatCurrency = (num) => `₹${(num || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+
+    function showToast(message, type = 'info') {
+      const container = $('#toast-container');
+      const id = 'toast-' + Math.random().toString(36).slice(2, 9);
+      const bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning text-dark' : 'bg-dark';
+      const html = `
+        <div id="${id}" class="toast align-items-center text-white ${bg} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>`;
+      container.insertAdjacentHTML('beforeend', html);
+      const toastEl = document.getElementById(id);
+      const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+      toast.show();
+      toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard', 'success')).catch(() => showToast('Copy failed', 'error'));
+    }
+
+    function setBusy(isBusy) {
+      const main = $('#app-container');
+      if (!main) return;
+      main.setAttribute('aria-busy', String(!!isBusy));
+    }
+
+    const statusBadge = (status) => {
+      const map = { live: 'success', upcoming: 'warning', full: 'secondary', completed: 'info' };
+      const label = status === 'live' ? 'Live' : status === 'upcoming' ? 'Upcoming' : status === 'completed' ? 'Completed' : status === 'full' ? 'Full' : status;
+      return `<span class="gx-status-badge text-bg-${map[status] || 'secondary'}">${label}</span>`;
+    };
+
+    // =============================
+    // UI Templates
+    // =============================
+    function renderSplash() {
+      $('#splash')?.classList.remove('hidden');
+    }
+
+    function hideSplash() {
+      $('#splash')?.classList.add('hidden');
+    }
+
+    function renderAuthView() {
+      const isLogin = appState.authTab === 'login';
+      const isRegister = appState.authTab === 'register';
+      const isForgot = appState.authTab === 'forgot';
+
+      return `
+        <section class="container" style="max-width: 520px;">
+          <div class="text-center mb-4">
+            <div class="gx-logo">
+              <span class="badge rounded-pill text-bg-danger px-2 py-1">GX</span>
+              <span>GameXzonE</span>
+            </div>
+            <div class="text-muted">Compete. Win. Dominate.</div>
+          </div>
+
+          <div class="gx-card p-3 p-md-4">
+            <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link ${isLogin ? 'active' : ''}" data-action="switch-auth" data-tab="login" type="button">Login</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link ${isRegister ? 'active' : ''}" data-action="switch-auth" data-tab="register" type="button">Register</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link ${isForgot ? 'active' : ''}" data-action="switch-auth" data-tab="forgot" type="button">Forgot</button>
+              </li>
+            </ul>
+
+            ${isLogin ? `
+            <form id="login-form" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" name="password" required placeholder="••••••••">
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="1" id="rememberMe">
+                  <label class="form-check-label" for="rememberMe">Remember me</label>
+                </div>
+                <a href="#" data-action="switch-auth" data-tab="forgot" class="small">Forgot password?</a>
+              </div>
+              <button class="btn btn-primary w-100 mb-2" type="submit"><i class="bi bi-box-arrow-in-right me-1"></i> Login</button>
+              <div class="d-flex align-items-center my-3">
+                <div class="flex-grow-1 gx-divider"></div>
+                <span class="px-3 text-muted small">or continue with</span>
+                <div class="flex-grow-1 gx-divider"></div>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-light" data-action="google-signin"><i class="bi bi-google me-2"></i> Google</button>
+                <button type="button" class="btn btn-outline-light" data-action="facebook-signin"><i class="bi bi-facebook me-2"></i> Facebook</button>
+              </div>
+            </form>
+            ` : ''}
+
+            ${isRegister ? `
+            <form id="register-form" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" required minlength="3" placeholder="Gamer123">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label">Password</label>
+                  <input type="password" class="form-control" name="password" required minlength="6" placeholder="••••••••">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Confirm</label>
+                  <input type="password" class="form-control" name="confirm" required minlength="6" placeholder="••••••••">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Referral Code (optional)</label>
+                <input type="text" class="form-control" name="referral" placeholder="Enter a friend's code">
+              </div>
+
+              <div class="gx-card p-3 mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="fw-semibold">OTP Verification</div>
+                  <span class="badge text-bg-secondary">Simulation</span>
+                </div>
+                <div class="small text-muted mb-2">Click "Send OTP" to receive a demo code. Enter it to proceed.</div>
+                <div class="input-group mb-2">
+                  <input type="text" class="form-control" id="otp-input" placeholder="Enter 6-digit OTP">
+                  <button type="button" class="btn btn-outline-light" data-action="send-otp">Send OTP</button>
+                </div>
+                <div id="otp-hint" class="small text-muted"></div>
+              </div>
+
+              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-person-plus-fill me-1"></i> Create Account</button>
+            </form>
+            ` : ''}
+
+            ${isForgot ? `
+            <form id="forgot-form" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+              </div>
+              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-envelope-at me-1"></i> Send Reset Link</button>
+            </form>
+            ` : ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderGamesScroller() {
+      const chips = [{ id: 'all', name: 'All Games', icon: 'bi-stars' }, ...appState.games.map(g => ({ id: g.id, name: g.name, icon: g.icon || 'bi-controller' }))];
+      return `
+        <div class="d-flex gap-2 overflow-auto pb-2">
+          ${chips.map(ch => `
+            <div class="gx-game-chip ${appState.selectedGameId === ch.id ? 'active' : ''}" data-action="select-game" data-gameid="${ch.id}">
+              <i class="bi ${ch.icon}"></i>
+              <span>${ch.name}</span>
+            </div>`).join('')}
+        </div>
+      `;
+    }
+
+    function renderTournamentCard(t) {
+      const spots = `${t.filledSpots || 0}/${t.totalSpots}`;
+      const pct = Math.min(100, Math.round(((t.filledSpots || 0) / (t.totalSpots || 1)) * 100));
+      return `
+        <div class="gx-card p-3 mb-3" data-action="open-tournament" data-tid="${t.id}">
+          <div class="d-flex gap-3">
+            <img class="gx-cover" alt="cover" src="${t.coverUrl || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop'}">
+            <div class="flex-grow-1 d-flex flex-column">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <div class="fw-semibold">${t.name}</div>
+                ${statusBadge(t.status)}
+              </div>
+              <div class="small text-muted mb-1">${t.gameTitle || t.gameId} • ${t.type || 'Solo'}</div>
+              <div class="d-flex flex-wrap gap-2 small mb-2">
+                <span class="badge text-bg-dark"><i class="bi bi-trophy-fill me-1"></i>Prize ${formatCurrency(t.prizePool || 0)}</span>
+                <span class="badge text-bg-dark"><i class="bi bi-ticket-perforated me-1"></i>${t.entryFee > 0 ? formatCurrency(t.entryFee) : 'Free'}</span>
+                <span class="badge text-bg-dark"><i class="bi bi-people-fill me-1"></i>${spots} spots</span>
+              </div>
+              <div class="gx-progress mb-1"><span style="width:${pct}%"></span></div>
+              <div class="small text-muted">Spots filled: ${pct}%</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHomeView() {
+      const featured = appState.featured;
+      const live = appState.live;
+      const upcoming = appState.upcoming;
+      return `
+        <section>
+          <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h2 class="h5 m-0">Games</h2>
+              <button class="btn btn-sm btn-outline-light" data-action="refresh-home"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+            </div>
+            ${renderGamesScroller()}
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h2 class="h5 m-0">Featured</h2>
+              <span class="text-muted small">Top picks for you</span>
+            </div>
+            ${featured.length ? featured.map(renderTournamentCard).join('') : '<div class="gx-card p-3 text-muted">No featured tournaments yet.</div>'}
+          </div>
+
+          <ul class="nav nav-pills mb-2" id="homeTab" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="ongoing-tab" data-bs-toggle="tab" data-bs-target="#ongoing" type="button" role="tab">Ongoing</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming</button></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="ongoing" role="tabpanel">
+              ${live.length ? live.map(renderTournamentCard).join('') : '<div class="gx-card p-3 text-muted">No live tournaments.</div>'}
+            </div>
+            <div class="tab-pane fade" id="upcoming" role="tabpanel">
+              ${upcoming.length ? upcoming.map(renderTournamentCard).join('') : '<div class="gx-card p-3 text-muted">No upcoming tournaments.</div>'}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderWalletView() {
+      const balance = appState.wallet?.balance || 0;
+      const tx = appState.transactions;
+      return `
+        <section>
+          <div class="gx-card p-3 mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <div class="text-muted small">Wallet Balance</div>
+                <div class="display-6">${formatCurrency(balance)}</div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-light" data-action="open-add-money"><i class="bi bi-plus-circle me-1"></i>Add Money</button>
+                <button class="btn btn-outline-light" data-action="open-withdraw"><i class="bi bi-arrow-down-circle me-1"></i>Withdraw</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="gx-card p-3 mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h2 class="h6 m-0">Earn Rewards</h2>
+              <a href="#" data-action="nav-earn" class="small">More</a>
+            </div>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" data-action="watch-earn"><i class="bi bi-play-btn-fill me-1"></i>Watch & Earn (Demo)</button>
+              <button class="btn btn-outline-light" data-action="go-refer"><i class="bi bi-share-fill me-1"></i>Refer & Earn</button>
+            </div>
+          </div>
+
+          <div class="gx-card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h2 class="h6 m-0">Transaction History</h2>
+              <button class="btn btn-sm btn-outline-light" data-action="refresh-tx"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+            ${tx.length ? '<div class="list-group list-group-flush">' + tx.map(t => `
+              <div class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold text-capitalize">${t.type.replace('_', ' ')}</div>
+                  <div class="small text-muted">${new Date(t.timestamp?.seconds ? t.timestamp.seconds * 1000 : Date.now()).toLocaleString()}</div>
+                </div>
+                <div class="fw-semibold ${t.amount >= 0 ? 'text-success' : 'text-danger'}">${t.amount >= 0 ? '+' : ''}${formatCurrency(t.amount)}</div>
+              </div>`).join('') + '</div>' : '<div class="text-muted">No transactions yet.</div>'}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderEarnView() {
+      const code = appState.profile?.referralCode || '';
+      return `
+        <section>
+          <div class="gx-card p-3 mb-3">
+            <h2 class="h6">Refer & Earn</h2>
+            <p class="text-muted small">Share your code with friends. When they join, both of you receive a bonus in your wallet.</p>
+            <div class="input-group mb-2">
+              <input class="form-control" value="${code}" readonly>
+              <button class="btn btn-outline-light" data-action="copy-ref">Copy</button>
+            </div>
+            <button class="btn btn-primary" data-action="share-ref"><i class="bi bi-share me-1"></i>Share</button>
+          </div>
+          <div class="gx-card p-3">
+            <h2 class="h6">Watch & Earn</h2>
+            <p class="text-muted small">Watch short videos to earn demo rewards.</p>
+            <button class="btn btn-outline-light" data-action="watch-earn"><i class="bi bi-play-btn-fill me-1"></i>Watch Video</button>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderLeaderboardView() {
+      const leaderboard = appState.leaderboard || [];
+      return `
+        <section>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h5 m-0">Leaderboard</h2>
+            <div>
+              <select class="form-select form-select-sm" id="leaderboard-game-filter" style="min-width: 160px">
+                <option value="all">All Games</option>
+                ${appState.games.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="gx-card p-0">
+            ${leaderboard.length ? '<div class="list-group list-group-flush">' + leaderboard.map((u, i) => `
+              <div class="list-group-item bg-transparent text-white d-flex align-items-center">
+                <div class="me-3"><span class="badge rounded-pill text-bg-${i === 0 ? 'warning' : i === 1 ? 'secondary' : i === 2 ? 'info' : 'dark'}">${i + 1}</span></div>
+                <img src="${u.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + encodeURIComponent(u.username || u.email)}" alt="avatar" class="rounded-circle me-3" style="width:40px;height:40px;object-fit:cover;">
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">${u.username || 'Player'}</div>
+                  <div class="small text-muted">Wins: ${(appState.leaderboardGameId === 'all' ? (u.stats?.wins || 0) : (u.statsByGame?.[appState.leaderboardGameId]?.wins || 0))} • K/D: ${(appState.leaderboardGameId === 'all' ? ((u.stats?.kdr || 0).toFixed?.(2) || u.stats?.kdr || 0) : ((u.statsByGame?.[appState.leaderboardGameId]?.kdr || 0).toFixed?.(2) || u.statsByGame?.[appState.leaderboardGameId]?.kdr || 0))}</div>
+                </div>
+                <div class="text-end">
+                  <div class="small text-muted">Earnings</div>
+                  <div class="fw-semibold">${formatCurrency(u.earnings || 0)}</div>
+                </div>
+              </div>`).join('') + '</div>' : '<div class="p-3 text-muted">No leaderboard data.</div>'}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderNotificationsView() {
+      const notes = appState.notifications || [];
+      return `
+        <section>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h5 m-0">Announcements</h2>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="notifToggle">
+              <label class="form-check-label small" for="notifToggle">Push notifications</label>
+            </div>
+          </div>
+          <div class="gx-card p-0">
+            ${notes.length ? '<div class="list-group list-group-flush">' + notes.map(n => `
+              <div class="list-group-item bg-transparent text-white">
+                <div class="d-flex justify-content-between">
+                  <div class="fw-semibold">${n.title || 'Announcement'}</div>
+                  <div class="small text-muted">${new Date(n.createdAt?.seconds ? n.createdAt.seconds * 1000 : Date.now()).toLocaleDateString()}</div>
+                </div>
+                <div class="small text-muted">${n.body || ''}</div>
+              </div>`).join('') + '</div>' : '<div class="p-3 text-muted">No announcements yet.</div>'}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderProfileView() {
+      const u = appState.profile || {};
+      return `
+        <section>
+          <div class="gx-card p-3 mb-3 d-flex align-items-center gap-3">
+            <img class="gx-avatar" id="avatar" src="${u.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + encodeURIComponent(u.username || u.email || 'gx')}" alt="avatar">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">${u.username || 'Player'}</div>
+              <div class="small text-muted">${appState.currentUser?.email || ''}</div>
+              <div class="d-flex gap-2 mt-2">
+                <label class="btn btn-sm btn-outline-light m-0" for="avatar-input"><i class="bi bi-upload me-1"></i>Upload</label>
+                <input id="avatar-input" type="file" class="d-none" accept="image/*">
+                <button class="btn btn-sm btn-outline-light" data-action="copy-ref"><i class="bi bi-clipboard me-1"></i>Copy Code</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="gx-card p-3 mb-3">
+            <div class="row text-center">
+              <div class="col"><div class="text-muted small">Matches</div><div class="h5">${u.stats?.matches || 0}</div></div>
+              <div class="col"><div class="text-muted small">Wins</div><div class="h5">${u.stats?.wins || 0}</div></div>
+              <div class="col"><div class="text-muted small">K/D</div><div class="h5">${(u.stats?.kdr || 0).toFixed?.(2) || u.stats?.kdr || 0}</div></div>
+            </div>
+          </div>
+
+          <div class="gx-card p-3 mb-3">
+            <h2 class="h6">Account</h2>
+            <div class="list-group list-group-flush">
+              <button class="list-group-item bg-transparent text-white text-start" data-action="open-change-password"><i class="bi bi-key me-2"></i>Change Password</button>
+              <button class="list-group-item bg-transparent text-white text-start" data-action="logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+            </div>
+          </div>
+
+          <div class="gx-card p-3">
+            <h2 class="h6">Shop</h2>
+            <div class="row" id="shop-products"></div>
+          </div>
+        </section>
+      `;
+    }
+
+    // =============================
+    // Core Logic - Firestore helpers
+    // =============================
+    async function ensureUserProfile(user) {
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        const referralCode = 'GX' + user.uid.slice(0, 6).toUpperCase();
+        await setDoc(userRef, {
+          uid: user.uid,
+          username: user.displayName || (user.email ? user.email.split('@')[0] : 'Player'),
+          email: user.email || '',
+          avatarUrl: user.photoURL || '',
+          referralCode,
+          stats: { matches: 0, wins: 0, kdr: 0 },
+          earnings: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+      const walletRef = doc(db, 'wallets', user.uid);
+      const wSnap = await getDoc(walletRef);
+      if (!wSnap.exists()) {
+        await setDoc(walletRef, { uid: user.uid, balance: 0, updatedAt: serverTimestamp() });
+      }
+      appState.profile = (await getDoc(userRef)).data();
+      appState.wallet = (await getDoc(walletRef)).data();
+    }
+
+    async function loadGames() {
+      const colRef = collection(db, 'games');
+      const res = await getDocs(colRef);
+      appState.games = res.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    async function loadTournaments() {
+      const colRef = collection(db, 'tournaments');
+      let qRef;
+      if (appState.selectedGameId && appState.selectedGameId !== 'all') {
+        qRef = query(colRef, where('gameId', '==', appState.selectedGameId), orderBy('createdAt', 'desc'), limit(100));
+      } else {
+        qRef = query(colRef, orderBy('createdAt', 'desc'), limit(100));
+      }
+      const res = await getDocs(qRef);
+      const list = res.docs.map(d => ({ id: d.id, ...d.data() }));
+      appState.tournaments = list;
+      appState.featured = list.filter(t => !!t.featured).slice(0, 5);
+      appState.live = list.filter(t => t.status === 'live');
+      appState.upcoming = list.filter(t => t.status === 'upcoming');
+    }
+
+    async function loadTransactions() {
+      if (!appState.currentUser) { appState.transactions = []; return; }
+      const colRef = collection(db, 'transactions');
+      const qRef = query(colRef, where('uid', '==', appState.currentUser.uid), orderBy('timestamp', 'desc'), limit(50));
+      const res = await getDocs(qRef);
+      appState.transactions = res.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    async function loadLeaderboard(gameId = 'all') {
+      const colRef = collection(db, 'users');
+      const res = await getDocs(colRef);
+      let players = res.docs.map(d => ({ id: d.id, ...d.data() }));
+      appState.leaderboardGameId = gameId || 'all';
+      if (gameId && gameId !== 'all') {
+        players.sort((a, b) => ((b.statsByGame?.[gameId]?.wins || 0) - (a.statsByGame?.[gameId]?.wins || 0)));
+      } else {
+        players.sort((a, b) => (b.stats?.wins || 0) - (a.stats?.wins || 0));
+      }
+      appState.leaderboard = players.slice(0, 50);
+    }
+
+    async function loadNotifications() {
+      const colRef = collection(db, 'notifications');
+      const res = await getDocs(query(colRef, orderBy('createdAt', 'desc'), limit(50)));
+      appState.notifications = res.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    async function openTournamentModal(tournamentId) {
+      const t = appState.tournaments.find(x => x.id === tournamentId);
+      if (!t) return;
+      const body = $('#tournament-modal-body');
+      const footer = $('#tournament-modal-footer');
+      body.innerHTML = `
+        <img class="gx-cover w-100 mb-3" src="${t.coverUrl || ''}" alt="cover">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="h5 m-0">${t.name}</div>
+          ${statusBadge(t.status)}
+        </div>
+        <div class="small text-muted mb-3">${t.gameTitle || t.gameId} • ${t.type || 'Solo'}</div>
+        <div class="row text-center mb-3">
+          <div class="col"><div class="text-muted small">Prize Pool</div><div class="h6">${formatCurrency(t.prizePool || 0)}</div></div>
+          <div class="col"><div class="text-muted small">Entry</div><div class="h6">${t.entryFee > 0 ? formatCurrency(t.entryFee) : 'Free'}</div></div>
+          <div class="col"><div class="text-muted small">Spots</div><div class="h6">${t.filledSpots || 0}/${t.totalSpots || 0}</div></div>
+        </div>
+        <div class="mb-3">
+          <div class="fw-semibold mb-1">Schedule</div>
+          <div class="small text-muted">${t.schedule || 'To be announced'}</div>
+        </div>
+        <div class="mb-3">
+          <div class="fw-semibold mb-1">Rules</div>
+          <div class="small text-muted">${t.rules || 'Standard game rules apply.'}</div>
+        </div>
+        ${t.status === 'completed' && t.results ? `
+          <div class="mb-3">
+            <div class="fw-semibold mb-1">Results</div>
+            ${Array.isArray(t.results?.winners) ? '<ul class="small">' + t.results.winners.map((w, i) => `<li>#${i+1} - <a href="#" data-action="open-user" data-userid="${w.uid}">${w.name || 'Player'}</a> (${formatCurrency(w.amount)})</li>`).join('') + '</ul>' : '<div class="small text-muted">Results unavailable.</div>'}
+          </div>` : ''}
+        <div class="gx-divider my-3"></div>
+        <div class="small text-muted">Prize distribution: ${Array.isArray(t.prizeDistribution) ? t.prizeDistribution.map((p,i)=>`#${i+1}:${formatCurrency(p)}`).join(' • ') : 'TBA'}</div>
+      `;
+
+      // Load participants (top 20)
+      const participants = Array.isArray(t.participants) ? t.participants : [];
+      if (participants.length) {
+        body.insertAdjacentHTML('beforeend', `<div class="mb-3"><div class="fw-semibold mb-1">Participants (${participants.length}/${t.totalSpots || 0})</div><div id="participants-list" class="list-group list-group-flush"></div></div>`);
+        const plist = $('#participants-list', body);
+        try {
+          const users = await Promise.all(participants.slice(0, 20).map(async (uid) => {
+            const s = await getDoc(doc(db, 'users', uid));
+            return s.exists() ? { uid, ...s.data() } : { uid, username: 'Player' };
+          }));
+          plist.innerHTML = users.map(u => `<div class="list-group-item bg-transparent text-white d-flex align-items-center"><img src="${u.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + encodeURIComponent(u.username || u.email || u.uid)}" alt="avatar" class="rounded-circle me-2" style="width:28px;height:28px;object-fit:cover;"><a href="#" data-action="open-user" data-userid="${u.uid}" class="text-white text-decoration-none">${u.username || u.email || 'Player'}</a></div>`).join('') + (participants.length > 20 ? `<div class="list-group-item bg-transparent text-muted small">+${participants.length - 20} more</div>` : '');
+        } catch (e) {
+          console.warn('Failed to load participants', e);
+        }
+      }
+
+      const alreadyJoined = Array.isArray(t.participants) && appState.currentUser ? t.participants.includes(appState.currentUser.uid) : false;
+      footer.innerHTML = '';
+      if (t.status === 'live' && t.streamUrl) {
+        footer.insertAdjacentHTML('beforeend', `<a href="${t.streamUrl}" target="_blank" class="btn btn-outline-light"><i class="bi bi-camera-video me-1"></i>Spectate</a>`);
+      }
+      if (t.status === 'upcoming') {
+        footer.insertAdjacentHTML('beforeend', `<button class="btn btn-primary" ${alreadyJoined ? 'disabled' : ''} data-action="join-tournament" data-tid="${t.id}"><i class="bi bi-person-plus me-1"></i>${alreadyJoined ? 'Joined' : 'Join Match'}</button>`);
+      }
+
+      const modal = new bootstrap.Modal($('#tournamentModal'));
+      modal.show();
+    }
+
+    async function joinTournament(tid) {
+      if (!appState.currentUser) { showToast('Please login first', 'warning'); return; }
+      const t = appState.tournaments.find(x => x.id === tid);
+      if (!t) return;
+      const alreadyJoined = Array.isArray(t.participants) && t.participants.includes(appState.currentUser.uid);
+      if (alreadyJoined) { showToast('Already joined', 'info'); return; }
+      if (t.filledSpots >= t.totalSpots) { showToast('Tournament is full', 'warning'); return; }
+
+      const walletRef = doc(db, 'wallets', appState.currentUser.uid);
+      const walletSnap = await getDoc(walletRef);
+      const balance = walletSnap.data()?.balance || 0;
+      const fee = t.entryFee || 0;
+      if (fee > 0 && balance < fee) { showToast('Insufficient balance', 'error'); return; }
+
+      // Deduct fee and add transaction, add participant, increment filled spots
+      await updateDoc(walletRef, { balance: increment(-fee), updatedAt: serverTimestamp() });
+      await addDoc(collection(db, 'transactions'), {
+        uid: appState.currentUser.uid,
+        type: 'entry_fee',
+        amount: -fee,
+        description: `Joined ${t.name}`,
+        tournamentId: t.id,
+        timestamp: serverTimestamp()
+      });
+      await updateDoc(doc(db, 'tournaments', t.id), {
+        participants: arrayUnion(appState.currentUser.uid),
+        filledSpots: increment(1)
+      });
+
+      showToast('Joined tournament successfully', 'success');
+      await loadTournaments();
+      await loadTransactions();
+      await refreshWallet();
+      render();
+    }
+
+    async function refreshWallet() {
+      if (!appState.currentUser) return;
+      const walletRef = doc(db, 'wallets', appState.currentUser.uid);
+      appState.wallet = (await getDoc(walletRef)).data();
+    }
+
+    async function uploadAvatarToImgBB(file) {
+      const form = new FormData();
+      // Convert to base64
+      const base64 = await new Promise(resolve => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result.split(',')[1]);
+        r.readAsDataURL(file);
+      });
+      form.append('image', base64);
+      const res = await fetch(`https://api.imgbb.com/1/upload?expiration=0&key=${IMGBB_API_KEY}`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (!data || !data.success) throw new Error('Upload failed');
+      return data.data.url;
+    }
+
+    async function updateAvatar(url) {
+      if (!appState.currentUser) return;
+      const userRef = doc(db, 'users', appState.currentUser.uid);
+      await updateDoc(userRef, { avatarUrl: url, updatedAt: serverTimestamp() });
+      appState.profile = (await getDoc(userRef)).data();
+      render();
+    }
+
+    // =============================
+    // Event Listeners (delegated)
+    // =============================
+    document.addEventListener('click', async (ev) => {
+      const el = ev.target.closest('[data-action]');
+      if (!el) return;
+      const action = el.getAttribute('data-action');
+
+      try {
+        switch (action) {
+          case 'switch-auth': {
+            ev.preventDefault();
+            appState.authTab = el.getAttribute('data-tab');
+            render();
+            break;
+          }
+          case 'google-signin': {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            break;
+          }
+          case 'facebook-signin': {
+            alert('Facebook Sign-In integration is required.');
+            break;
+          }
+          case 'select-game': {
+            appState.selectedGameId = el.getAttribute('data-gameid');
+            await loadTournaments();
+            render();
+            break;
+          }
+          case 'open-tournament': {
+            const tid = el.getAttribute('data-tid');
+            await openTournamentModal(tid);
+            break;
+          }
+          case 'join-tournament': {
+            const tid = el.getAttribute('data-tid');
+            await joinTournament(tid);
+            break;
+          }
+          case 'open-user': {
+            ev.preventDefault();
+            const uid = el.getAttribute('data-userid');
+            await openUserModal(uid);
+            break;
+          }
+          case 'refresh-home': {
+            setBusy(true);
+            await loadGames();
+            await loadTournaments();
+            setBusy(false);
+            render();
+            break;
+          }
+          case 'nav-home': navigate('home'); break;
+          case 'nav-wallet': navigate('wallet'); break;
+          case 'nav-leaderboard': navigate('leaderboard'); break;
+          case 'nav-notifications': navigate('notifications'); break;
+          case 'nav-profile': navigate('profile'); break;
+          case 'nav-earn': navigate('earn'); break;
+          case 'open-add-money': {
+            const modal = new bootstrap.Modal($('#paymentModal'));
+            $('#paymentModal .modal-title').textContent = 'Add Money';
+            modal.show();
+            break;
+          }
+          case 'open-withdraw': {
+            const modal = new bootstrap.Modal($('#paymentModal'));
+            $('#paymentModal .modal-title').textContent = 'Withdraw';
+            modal.show();
+            break;
+          }
+          case 'copy-ref': {
+            const code = appState.profile?.referralCode || '';
+            if (code) copyToClipboard(code);
+            break;
+          }
+          case 'share-ref': {
+            const code = appState.profile?.referralCode || '';
+            const text = `Join me on GameXzonE! Use my referral code ${code}`;
+            if (navigator.share) {
+              navigator.share({ title: 'GameXzonE', text });
+            } else {
+              copyToClipboard(text);
+            }
+            break;
+          }
+          case 'watch-earn': {
+            alert('Simulated ad watched! You earned ₹5.');
+            if (appState.currentUser) {
+              await updateDoc(doc(db, 'wallets', appState.currentUser.uid), { balance: increment(5), updatedAt: serverTimestamp() });
+              await addDoc(collection(db, 'transactions'), { uid: appState.currentUser.uid, type: 'watch_earn', amount: 5, description: 'Watch & Earn reward', timestamp: serverTimestamp() });
+              await refreshWallet();
+              await loadTransactions();
+              render();
+            }
+            break;
+          }
+          case 'go-refer': navigate('earn'); break;
+          case 'refresh-tx': await loadTransactions(); render(); break;
+          case 'open-change-password': {
+            const newPass = prompt('Enter a new password (min 6 chars):');
+            if (newPass && newPass.length >= 6) {
+              await updatePassword(auth.currentUser, newPass).then(() => showToast('Password updated', 'success')).catch((e) => showToast(e.message, 'error'));
+            }
+            break;
+          }
+          case 'logout': {
+            await signOut(auth);
+            break;
+          }
+          default:
+            break;
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Something went wrong', 'error');
+      }
+    });
+
+    // Payment modal gateway click
+    $('#paymentModal')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.list-group-item');
+      if (!btn) return;
+      const gateway = btn.getAttribute('data-gateway');
+      alert(`Integration with ${gateway} is required.`);
+    });
+
+    // Forms
+    document.addEventListener('submit', async (ev) => {
+      const form = ev.target;
+      if (!(form instanceof HTMLFormElement)) return;
+
+      if (form.id === 'login-form') {
+        ev.preventDefault();
+        const email = form.email.value.trim();
+        const password = form.password.value;
+        const remember = $('#rememberMe').checked;
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+        await signInWithEmailAndPassword(auth, email, password);
+        return;
+      }
+
+      if (form.id === 'register-form') {
+        ev.preventDefault();
+        const username = form.username.value.trim();
+        const email = form.email.value.trim();
+        const password = form.password.value;
+        const confirm = form.confirm.value;
+        const referral = form.referral.value.trim();
+        if (password !== confirm) { showToast('Passwords do not match', 'warning'); return; }
+        if (!appState.otpPending || appState.otpPending.verified !== true) { showToast('Please complete OTP verification', 'warning'); return; }
+
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: username });
+        await ensureUserProfile(cred.user);
+
+        // Apply referral bonus if code is valid
+        if (referral) {
+          const allUsers = await getDocs(collection(db, 'users'));
+          const refUser = allUsers.docs.map(d => ({ id: d.id, ...d.data() })).find(u => u.referralCode === referral);
+          const bonus = 10;
+          if (refUser) {
+            await updateDoc(doc(db, 'wallets', refUser.uid || refUser.id), { balance: increment(bonus), updatedAt: serverTimestamp() });
+            await addDoc(collection(db, 'transactions'), { uid: refUser.uid || refUser.id, type: 'referral_bonus', amount: bonus, description: `Referral bonus from ${username}`, timestamp: serverTimestamp() });
+            await updateDoc(doc(db, 'wallets', cred.user.uid), { balance: increment(bonus), updatedAt: serverTimestamp() });
+            await addDoc(collection(db, 'transactions'), { uid: cred.user.uid, type: 'referral_bonus', amount: bonus, description: 'Referral signup bonus', timestamp: serverTimestamp() });
+          } else {
+            showToast('Invalid referral code (ignored)', 'warning');
+          }
+        }
+        return;
+      }
+
+      if (form.id === 'forgot-form') {
+        ev.preventDefault();
+        const email = form.email.value.trim();
+        await sendPasswordResetEmail(auth, email);
+        showToast('Reset link sent. Check your email.', 'success');
+        appState.authTab = 'login';
+        render();
+        return;
+      }
+    });
+
+    // OTP actions
+    document.addEventListener('click', (ev) => {
+      const el = ev.target.closest('[data-action]');
+      if (!el) return;
+      if (el.getAttribute('data-action') === 'send-otp') {
+        const code = '123456';
+        appState.otpPending = { code, verified: false, expiresAt: Date.now() + 5 * 60_000 };
+        const hint = $('#otp-hint');
+        if (hint) hint.textContent = `Demo OTP: ${code} (valid 5 min)`;
+        showToast('OTP sent (simulation).', 'success');
+      }
+    });
+
+    document.addEventListener('input', (ev) => {
+      const inp = ev.target;
+      if (!(inp instanceof HTMLInputElement)) return;
+      if (inp.id === 'otp-input') {
+        if (appState.otpPending && Date.now() < appState.otpPending.expiresAt && inp.value.replace(/\D/g, '') === appState.otpPending.code) {
+          appState.otpPending.verified = true;
+          showToast('OTP verified', 'success');
+        }
+      }
+    });
+
+    // Avatar upload
+    document.addEventListener('change', async (ev) => {
+      const inp = ev.target;
+      if (!(inp instanceof HTMLInputElement)) return;
+      if (inp.id === 'avatar-input' && inp.files && inp.files[0]) {
+        try {
+          setBusy(true);
+          const url = await uploadAvatarToImgBB(inp.files[0]);
+          await updateAvatar(url);
+          showToast('Profile picture updated', 'success');
+        } catch (e) {
+          showToast(e.message || 'Upload failed', 'error');
+        } finally {
+          setBusy(false);
+        }
+      }
+    });
+
+    // Global change handlers
+    document.addEventListener('change', async (ev) => {
+      const tgt = ev.target;
+      if (tgt instanceof HTMLSelectElement && tgt.id === 'leaderboard-game-filter') {
+        await loadLeaderboard(tgt.value);
+        render();
+      }
+      if (tgt instanceof HTMLInputElement && tgt.id === 'notifToggle') {
+        const enabled = tgt.checked;
+        localStorage.setItem('gx-push', enabled ? '1' : '0');
+        showToast(enabled ? 'Push notifications enabled (UI only)' : 'Push notifications disabled', 'success');
+      }
+    });
+
+    // =============================
+    // Rendering and Navigation
+    // =============================
+    function setBottomNavVisibility(show) {
+      const nav = $('#bottom-nav');
+      if (!nav) return;
+      nav.classList.toggle('d-none', !show);
+      if (show) {
+        // Set active
+        $$('#bottom-nav .nav-link').forEach(a => a.classList.remove('active'));
+        const map = { home: 'nav-home', wallet: 'nav-wallet', leaderboard: 'nav-leaderboard', notifications: 'nav-notifications', profile: 'nav-profile', earn: 'nav-wallet' };
+        const action = map[appState.currentView];
+        if (action) {
+          const el = $(`#bottom-nav [data-action="${action}"]`);
+          el?.classList.add('active');
+        }
+      }
+    }
+
+    async function render() {
+      const main = $('#app-container');
+      if (!main) return;
+      setBottomNavVisibility(!!appState.currentUser);
+
+      let html = '';
+      switch (appState.currentView) {
+        case 'splash': html = ''; break;
+        case 'auth': html = renderAuthView(); break;
+        case 'home': html = renderHomeView(); break;
+        case 'wallet': html = renderWalletView(); break;
+        case 'earn': html = renderEarnView(); break;
+        case 'leaderboard': html = renderLeaderboardView(); break;
+        case 'notifications': html = renderNotificationsView(); break;
+        case 'profile': html = renderProfileView(); break;
+        default: html = '<div class="gx-card p-3">Unknown view</div>';
+      }
+      main.innerHTML = html;
+
+      // After render hooks for specific views
+      if (appState.currentView === 'profile') {
+        // Load shop products
+        loadShopProducts();
+      }
+      if (appState.currentView === 'notifications') {
+        const tgl = $('#notifToggle');
+        if (tgl) tgl.checked = localStorage.getItem('gx-push') === '1';
+      }
+      if (appState.currentView === 'leaderboard') {
+        const sel = $('#leaderboard-game-filter');
+        if (sel) sel.value = appState.leaderboardGameId || 'all';
+      }
+    }
+
+    function navigate(view) {
+      appState.currentView = view;
+      render();
+    }
+
+    async function openUserModal(uid) {
+      if (!uid) return;
+      const body = $('#user-modal-body');
+      body.innerHTML = '<div class="text-center py-5 text-muted">Loading...</div>';
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        const u = snap.exists() ? snap.data() : { username: 'Player', email: '' };
+        body.innerHTML = `
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <img src="${u.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + encodeURIComponent(u.username || u.email || 'gx')}" class="rounded-circle" style="width:72px;height:72px;object-fit:cover;" alt="avatar">
+            <div>
+              <div class="h5 m-0">${u.username || 'Player'}</div>
+              <div class="small text-muted">${u.email || ''}</div>
+            </div>
+          </div>
+          <div class="gx-card p-3 mb-2">
+            <div class="row text-center">
+              <div class="col"><div class="text-muted small">Matches</div><div class="h6">${u.stats?.matches || 0}</div></div>
+              <div class="col"><div class="text-muted small">Wins</div><div class="h6">${u.stats?.wins || 0}</div></div>
+              <div class="col"><div class="text-muted small">K/D</div><div class="h6">${(u.stats?.kdr || 0).toFixed?.(2) || u.stats?.kdr || 0}</div></div>
+            </div>
+          </div>
+          <div class="gx-card p-3">
+            <div class="small text-muted">Total Earnings</div>
+            <div class="h5 m-0">${formatCurrency(u.earnings || 0)}</div>
+          </div>
+        `;
+      } catch (e) {
+        body.innerHTML = '<div class="text-center py-5 text-muted">Failed to load player.</div>';
+      }
+      const modal = new bootstrap.Modal($('#userModal'));
+      modal.show();
+    }
+
+    // Shop
+    async function loadShopProducts() {
+      const row = $('#shop-products');
+      if (!row) return;
+      const res = await getDocs(collection(db, 'shop_products'));
+      const items = res.docs.map(d => ({ id: d.id, ...d.data() }));
+      row.innerHTML = items.map(p => `
+        <div class="col-12 mb-2">
+          <div class="gx-card p-3 d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fw-semibold">${p.title}</div>
+              <div class="small text-muted">${p.description || ''}</div>
+            </div>
+            <button class="btn btn-primary btn-sm" data-action="buy-product" data-pid="${p.id}" data-price="${p.price}">Buy ${formatCurrency(p.price)}</button>
+          </div>
+        </div>`).join('');
+
+      // Attach buy listeners via delegation
+      row.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="buy-product"]');
+        if (!btn) return;
+        const pid = btn.getAttribute('data-pid');
+        const price = Number(btn.getAttribute('data-price')) || 0;
+        if (!appState.currentUser) { showToast('Please login first', 'warning'); return; }
+        const wRef = doc(db, 'wallets', appState.currentUser.uid);
+        const wSnap = await getDoc(wRef);
+        const balance = wSnap.data()?.balance || 0;
+        if (balance < price) { showToast('Insufficient balance', 'error'); return; }
+        await updateDoc(wRef, { balance: increment(-price), updatedAt: serverTimestamp() });
+        await addDoc(collection(db, 'transactions'), { uid: appState.currentUser.uid, type: 'purchase', amount: -price, description: `Purchased ${pid}`, timestamp: serverTimestamp() });
+        await refreshWallet();
+        await loadTransactions();
+        showToast('Purchase successful (applied virtually)', 'success');
+        render();
+      }, { once: true });
+    }
+
+    // =============================
+    // Initialization & Auth
+    // =============================
+    function setupManifest() {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'><rect width='512' height='512' fill='%2316213e'/><circle cx='256' cy='256' r='180' fill='%231a1a2e'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-family='Poppins, Arial' font-weight='700' font-size='150' fill='%23e94560'>GX</text></svg>`;
+      const iconSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+      const manifest = {
+        name: 'GameXzonE Tournament',
+        short_name: 'GameXzonE',
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#16213e',
+        theme_color: '#e94560',
+        description: 'Discover, join, and compete in online tournaments.',
+        icons: [
+          { src: iconSrc, sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+        ]
+      };
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+      document.head.appendChild(link);
+    }
+
+    function registerServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      const swCode = `
+        const CACHE_NAME = 'gamexzone-cache-v1';
+        const CORE_ASSETS = [];
+        self.addEventListener('install', (event) => {
+          event.waitUntil((async () => {
+            const cache = await caches.open(CACHE_NAME);
+            try { await cache.add(new Request(self.location.href, { cache: 'reload' })); } catch (e) {}
+            await self.skipWaiting();
+          })());
+        });
+        self.addEventListener('activate', (event) => {
+          event.waitUntil((async () => {
+            const keys = await caches.keys();
+            await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+            await self.clients.claim();
+          })());
+        });
+        self.addEventListener('fetch', (event) => {
+          const req = event.request;
+          if (req.method !== 'GET') return;
+          event.respondWith((async () => {
+            const cached = await caches.match(req);
+            if (cached) return cached;
+            try {
+              const res = await fetch(req);
+              return res;
+            } catch (e) {
+              const fallback = await caches.match(self.location.href);
+              return fallback || Response.error();
+            }
+          })());
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url).catch(console.warn);
+    }
+
+    async function init() {
+      renderSplash();
+      setupManifest();
+      registerServiceWorker();
+
+      onAuthStateChanged(auth, async (user) => {
+        try {
+          appState.currentUser = user;
+          if (user) {
+            await ensureUserProfile(user);
+            await loadGames();
+            await loadTournaments();
+            await loadTransactions();
+            await loadLeaderboard();
+            await loadNotifications();
+            appState.currentView = 'home';
+          } else {
+            appState.profile = null;
+            appState.wallet = null;
+            appState.currentView = 'auth';
+            appState.authTab = 'login';
+          }
+          render();
+        } catch (e) {
+          console.error(e);
+          showToast(e.message || 'Initialization failed', 'error');
+        } finally {
+          hideSplash();
+        }
+      });
+    }
+
+    // =============================
+    // Seed Database (mock data)
+    // =============================
+    async function seedDatabase() {
+      const games = [
+        { id: 'pubg', name: 'PUBG Mobile', icon: 'bi-crosshair', coverUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop' },
+        { id: 'freefire', name: 'Free Fire', icon: 'bi-fire', coverUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop' },
+        { id: 'codm', name: 'Call of Duty', icon: 'bi-bullseye', coverUrl: 'https://images.unsplash.com/photo-1546443046-ed1ce6ffd1ab?q=80&w=1200&auto=format&fit=crop' },
+        { id: 'valorant', name: 'Valorant', icon: 'bi-lightning-charge', coverUrl: 'https://images.unsplash.com/photo-1611836449382-c3f94f8a3d9b?q=80&w=1200&auto=format&fit=crop' }
+      ];
+
+      // Games
+      for (const g of games) {
+        await setDoc(doc(db, 'games', g.id), { name: g.name, icon: g.icon, coverUrl: g.coverUrl, createdAt: serverTimestamp() });
+      }
+
+      // Shop products
+      const products = [
+        { id: 'badge_gold', title: 'Profile Badge (Gold)', description: 'Show a gold badge on your profile.', price: 49 },
+        { id: 'name_color', title: 'Username Color Change', description: 'Stand out with a custom color.', price: 29 },
+        { id: 'double_xp', title: 'Double XP (24h)', description: 'Earn double XP for the next day.', price: 99 }
+      ];
+      for (const p of products) {
+        await setDoc(doc(db, 'shop_products', p.id), { title: p.title, description: p.description, price: p.price, createdAt: serverTimestamp() });
+      }
+
+      // Users, wallets, transactions
+      const sampleUsers = [
+        { uid: 'seedU1', username: 'NightFury', email: 'night@example.com', avatarUrl: '', stats: { matches: 120, wins: 36, kdr: 2.4 }, earnings: 12500, statsByGame: { pubg: { matches: 70, wins: 20, kdr: 2.6 }, codm: { matches: 30, wins: 10, kdr: 2.1 }, freefire: { matches: 20, wins: 6, kdr: 1.9 } } },
+        { uid: 'seedU2', username: 'PixelGhost', email: 'ghost@example.com', avatarUrl: '', stats: { matches: 95, wins: 22, kdr: 1.8 }, earnings: 8400, statsByGame: { pubg: { matches: 45, wins: 8, kdr: 1.7 }, valorant: { matches: 35, wins: 11, kdr: 1.5 }, freefire: { matches: 15, wins: 3, kdr: 1.3 } } },
+        { uid: 'seedU3', username: 'Crimson', email: 'crimson@example.com', avatarUrl: '', stats: { matches: 150, wins: 41, kdr: 2.1 }, earnings: 15750, statsByGame: { valorant: { matches: 80, wins: 20, kdr: 2.0 }, codm: { matches: 40, wins: 12, kdr: 2.2 }, pubg: { matches: 30, wins: 9, kdr: 1.8 } } }
+      ];
+
+      for (const su of sampleUsers) {
+        await setDoc(doc(db, 'users', su.uid), { ...su, referralCode: 'GX' + su.uid.slice(0, 6).toUpperCase(), createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await setDoc(doc(db, 'wallets', su.uid), { uid: su.uid, balance: 500, updatedAt: serverTimestamp() });
+        await addDoc(collection(db, 'transactions'), { uid: su.uid, type: 'deposit', amount: 500, description: 'Initial deposit', timestamp: serverTimestamp() });
+        await addDoc(collection(db, 'transactions'), { uid: su.uid, type: 'winnings', amount: 250, description: 'Match winnings', timestamp: serverTimestamp() });
+        await addDoc(collection(db, 'transactions'), { uid: su.uid, type: 'entry_fee', amount: -50, description: 'Tournament entry', timestamp: serverTimestamp() });
+      }
+
+      // Tournaments
+      const sampleT = [
+        { gameId: 'pubg', gameTitle: 'PUBG Mobile', name: 'Solo - Erangel', type: 'Solo', prizePool: 5000, entryFee: 50, totalSpots: 100, filledSpots: 20, status: 'upcoming', featured: true, coverUrl: games[0].coverUrl, schedule: 'Today 8:00 PM', rules: 'No emulators. Asia server.', prizeDistribution: [2500, 1500, 1000], participants: ['seedU1', 'seedU2'] },
+        { gameId: 'codm', gameTitle: 'Call of Duty', name: 'Squads - Summit', type: 'Squads', prizePool: 8000, entryFee: 75, totalSpots: 80, filledSpots: 80, status: 'full', featured: false, coverUrl: games[2].coverUrl, schedule: 'Tomorrow 6:30 PM', rules: 'Controller allowed.', prizeDistribution: [4000, 2500, 1500], participants: ['seedU1', 'seedU3'] },
+        { gameId: 'valorant', gameTitle: 'Valorant', name: '5v5 - Ascent', type: 'Team', prizePool: 10000, entryFee: 0, totalSpots: 16, filledSpots: 12, status: 'live', featured: true, coverUrl: games[3].coverUrl, schedule: 'Live now', rules: 'Competitive rules.', streamUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', prizeDistribution: [5000, 3000, 2000], participants: ['seedU2', 'seedU3'] },
+        { gameId: 'freefire', gameTitle: 'Free Fire', name: 'Solo - Bermuda', type: 'Solo', prizePool: 3000, entryFee: 25, totalSpots: 50, filledSpots: 50, status: 'completed', featured: false, coverUrl: games[1].coverUrl, schedule: 'Yesterday', rules: 'Mobile only.', results: { winners: [ { uid: 'seedU1', name: 'NightFury', amount: 1500 }, { uid: 'seedU2', name: 'PixelGhost', amount: 900 }, { uid: 'seedU3', name: 'Crimson', amount: 600 } ] }, prizeDistribution: [1500, 900, 600], participants: ['seedU1', 'seedU2', 'seedU3'] }
+      ];
+      for (const t of sampleT) {
+        await addDoc(collection(db, 'tournaments'), { ...t, createdAt: serverTimestamp() });
+      }
+
+      // Notifications
+      const announcements = [
+        { title: 'Welcome to GameXzonE', body: 'Seed data installed. Enjoy your matches!', createdAt: serverTimestamp() },
+        { title: 'New Shop Items', body: 'Check out the latest virtual goods.', createdAt: serverTimestamp() }
+      ];
+      for (const n of announcements) {
+        await addDoc(collection(db, 'notifications'), n);
+      }
+
+      console.log('Database seeded.');
+      showToast('Database seeded successfully', 'success');
+    }
+
+    // Expose for console usage
+    window.seedDatabase = seedDatabase;
+
+    // Start app
+    init();
+  </script>
+</body>
+</html>
