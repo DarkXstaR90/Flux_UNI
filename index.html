@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>StreamLite — Mobile Streaming App</title>
+  <meta name="theme-color" content="#000000" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #000000;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #f8fafc;
+      --elev: 0 6px 20px rgba(0,0,0,0.08);
+      --radius: 14px;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Generic utils */
+    .hidden { display: none !important; }
+    .sr { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .container { width: 100%; max-width: 960px; margin: 0 auto; padding: 16px; }
+    .row { display: flex; gap: 12px; align-items: center; }
+    .spacer { flex: 1; }
+    .btn { appearance: none; border: 1px solid var(--fg); color: var(--fg); background: transparent; padding: 10px 14px; border-radius: 999px; font-weight: 600; cursor: pointer; transition: transform .1s ease, background .2s ease, color .2s ease; }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--fg); color: #fff; border-color: var(--fg); }
+    .btn.block { width: 100%; }
+    .btn.icon { display: inline-flex; align-items: center; justify-content: center; padding: 8px; width: 40px; height: 40px; border-radius: 9999px; }
+    .tag { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: 12px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--elev); padding: 14px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .input, input[type="date"], textarea, select { width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 16px; background: #fff; color: var(--fg); outline: none; }
+    textarea { min-height: 96px; resize: vertical; }
+
+    /* Header */
+    header.appbar { position: sticky; top: 0; z-index: 50; background: #000; color: #fff; }
+    .appbar-inner { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; height: 56px; padding: 0 12px; }
+    .appbar-title { font-weight: 700; font-size: 16px; text-align: left; }
+    .search { display: flex; align-items: center; background: #fff; border-radius: 999px; padding: 6px 12px; border: 1px solid #111; }
+    .search input { border: none; outline: none; width: 100%; font-size: 14px; }
+
+    /* Profile button (User Panel) */
+    .profile-btn { justify-self: end; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9999px; border: 2px solid #fff; background: transparent; padding: 0; cursor: pointer; }
+    .profile-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+    /* Screens */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Auth screens */
+    .auth-wrap { padding: 24px 16px; }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .auth-tabs button { padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #fff; font-weight: 700; }
+    .auth-section { display: none; }
+    .auth-section.active { display: block; }
+
+    /* Movie cards */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .movie-card { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #fff; }
+    .thumb { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #e5e7eb; overflow: hidden; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .movie-meta { padding: 10px 12px; display: grid; gap: 4px; }
+    .movie-title { font-weight: 800; font-size: 15px; }
+    .movie-year { color: var(--muted); font-size: 12px; }
+
+    /* Admin list items */
+    .admin-item { display: grid; grid-template-columns: 120px 1fr 64px; gap: 10px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+    .admin-item .ai-thumb { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #f1f5f9; }
+    .admin-item .ai-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .admin-item .ai-info { display: grid; gap: 6px; }
+    .admin-item h4 { margin: 0; font-size: 15px; }
+    .admin-item .ai-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .icon-btn { background: transparent; border: 1px solid var(--fg); color: var(--fg); border-radius: 10px; padding: 6px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .icon-btn svg { width: 18px; height: 18px; stroke: var(--fg); fill: none; stroke-width: 2; }
+
+    /* Streaming page */
+    .player { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; }
+    .actions { display: flex; gap: 10px; padding: 10px 2px; }
+    .toggle-icon { border: 1px solid var(--fg); border-radius: 12px; width: 46px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: #fff; cursor: pointer; }
+    .toggle-icon svg { width: 22px; height: 22px; stroke: var(--fg); fill: transparent; stroke-width: 2px; transition: fill .2s ease; }
+    .toggle-icon.active svg { fill: var(--fg); }
+
+    /* Profile modal */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; justify-content: center; z-index: 60; }
+    .modal.open { display: flex; }
+    .sheet { background: #fff; width: 100%; max-width: 960px; border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 16px; max-height: 80vh; overflow: auto; }
+    .list { display: grid; gap: 10px; margin-top: 8px; }
+    .list-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+    .logout-in-modal { background: #000; color: #fff; border-color: #000; }
+
+    /* Footer Notes */
+    details.rules { margin: 22px 16px; }
+
+    /* Desktop tweaks */
+    @media (min-width: 680px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-item { grid-template-columns: 180px 1fr 92px; }
+      .appbar-title { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Global headers are rendered inside screens for flexibility -->
+
+  <!-- AUTH SCREEN (Admin + User) -->
+  <section id="screen-auth" class="screen active">
+    <header class="appbar">
+      <div class="appbar-inner">
+        <div></div>
+        <div class="appbar-title">Welcome to StreamLite</div>
+        <div></div>
+      </div>
+    </header>
+    <div class="auth-wrap container">
+      <div class="auth-tabs">
+        <button id="tab-user" class="btn block primary">User</button>
+        <button id="tab-admin" class="btn block">Admin</button>
+      </div>
+
+      <!-- USER AUTH -->
+      <div id="auth-user" class="auth-section active">
+        <div class="card" style="margin-bottom:12px">
+          <h3 style="margin:0 0 10px 0">User Login</h3>
+          <form id="form-user-login">
+            <div class="field"><label>Email</label><input class="input" type="email" id="user-login-email" required /></div>
+            <div class="field"><label>Password</label><input class="input" type="password" id="user-login-pass" required /></div>
+            <button class="btn primary block" type="submit">Login</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 10px 0">User Register</h3>
+          <form id="form-user-register">
+            <div class="field"><label>Username</label><input class="input" type="text" id="user-reg-name" required /></div>
+            <div class="field"><label>Email</label><input class="input" type="email" id="user-reg-email" required /></div>
+            <div class="field"><label>Password</label><input class="input" type="password" id="user-reg-pass" required minlength="6" /></div>
+            <button class="btn primary block" type="submit">Create Account</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ADMIN AUTH -->
+      <div id="auth-admin" class="auth-section">
+        <div class="card" style="margin-bottom:12px">
+          <h3 style="margin:0 0 10px 0">Admin Login</h3>
+          <form id="form-admin-login">
+            <div class="field"><label>Email</label><input class="input" type="email" id="admin-login-email" required /></div>
+            <div class="field"><label>Password</label><input class="input" type="password" id="admin-login-pass" required /></div>
+            <button class="btn primary block" type="submit">Login as Admin</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 10px 0">Admin Register</h3>
+          <p class="tag" style="margin-bottom:10px">Note: Production deployments should assign admin via custom claims or console; users cannot change roles via client.</p>
+          <form id="form-admin-register">
+            <div class="field"><label>Admin Username</label><input class="input" type="text" id="admin-reg-name" required /></div>
+            <div class="field"><label>Email</label><input class="input" type="email" id="admin-reg-email" required /></div>
+            <div class="field"><label>Password</label><input class="input" type="password" id="admin-reg-pass" required minlength="6" /></div>
+            <button class="btn primary block" type="submit">Create Admin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN DASHBOARD -->
+  <section id="screen-admin" class="screen">
+    <header class="appbar">
+      <div class="appbar-inner">
+        <div></div>
+        <div class="search" style="align-self:center">
+          <input id="admin-search" type="search" placeholder="Search movies" />
+        </div>
+        <button id="btn-admin-logout" class="btn" style="border-color:#fff; color:#fff">Logout</button>
+      </div>
+    </header>
+    <div class="container" style="padding-top:14px">
+      <div class="card" style="margin-bottom:14px">
+        <h3 style="margin:0 0 10px 0">Upload / Edit Movie</h3>
+        <form id="form-movie">
+          <input type="hidden" id="movie-id" />
+          <div class="field"><label>Vimeo Video URL</label><input id="movie-vimeo" class="input" type="url" required placeholder="https://vimeo.com/xxxxxxxx" /></div>
+          <div class="field"><label>ImgBB Thumbnail Direct Link</label><input id="movie-thumb" class="input" type="url" required placeholder="https://i.ibb.co/... (16:9 image)" /></div>
+          <div class="field"><label>Title</label><input id="movie-title" class="input" required /></div>
+          <div class="field"><label>Description</label><textarea id="movie-desc" class="input" required></textarea></div>
+          <div class="field"><label>Date</label><input id="movie-date" type="date" required /></div>
+          <div class="row">
+            <button class="btn primary" type="submit" id="btn-save-movie">Save Movie</button>
+            <button class="btn" type="button" id="btn-reset-form">Reset</button>
+            <span class="spacer"></span>
+            <span id="movie-form-status" class="tag">Ready</span>
+          </div>
+        </form>
+      </div>
+
+      <div id="admin-movie-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- USER HOME -->
+  <section id="screen-user" class="screen">
+    <header class="appbar">
+      <div class="appbar-inner">
+        <div></div>
+        <div class="search"><input id="user-search" type="search" placeholder="Search movies" /></div>
+        <button id="btn-profile" class="profile-btn" aria-label="Profile">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z"></path></svg>
+        </button>
+      </div>
+    </header>
+    <div class="container" style="padding-top:14px">
+      <div id="user-feed" class="grid"></div>
+    </div>
+  </section>
+
+  <!-- MOVIE STREAMING -->
+  <section id="screen-stream" class="screen">
+    <header class="appbar">
+      <div class="appbar-inner">
+        <button id="btn-back" class="btn icon" aria-label="Back" style="border-color:#fff; color:#fff">
+          ←
+        </button>
+        <div id="stream-title" class="appbar-title" style="color:#fff; text-align:center"></div>
+        <div></div>
+      </div>
+    </header>
+    <div class="container" style="padding-top:14px">
+      <div id="player" class="player"></div>
+      <div class="actions">
+        <button id="btn-like" class="toggle-icon" aria-label="Like">
+          <svg viewBox="0 0 24 24"><path d="M12.1 8.64 12 8.77l-.1-.12C10.14 6.6 7.1 6.6 5.14 8.56c-1.96 1.96-1.96 5.14 0 7.1L12 22l6.86-6.34c1.96-1.96 1.96-5.14 0-7.1-1.96-1.96-4.99-1.96-6.76.18Z"></path></svg>
+        </button>
+        <button id="btn-watch" class="toggle-icon" aria-label="Watchlist">
+          <svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v16l-7-4-7 4V4a1 1 0 0 1 1-1Z"></path></svg>
+        </button>
+      </div>
+      <div id="stream-desc" class="card"></div>
+    </div>
+  </section>
+
+  <!-- PROFILE MODAL -->
+  <div id="modal-profile" class="modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+    <div class="sheet">
+      <div class="row">
+        <h3 id="profile-title" style="margin:0">Profile</h3>
+        <span class="spacer"></span>
+        <button id="btn-close-profile" class="btn">Close</button>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Change Username</h4>
+        <form id="form-username" class="row">
+          <input id="new-username" class="input" placeholder="New username" required style="flex:1" />
+          <button class="btn primary" type="submit">Save</button>
+        </form>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="btn-logout" class="btn logout-in-modal">Logout</button>
+        <span class="spacer"></span>
+        <span id="profile-email" class="tag"></span>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Liked Movies</h4>
+        <div id="list-liked" class="list"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Watchlist</h4>
+        <div id="list-watch" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#000;color:#fff;padding:10px 14px;border-radius:999px;display:none;z-index:70">Saved</div>
+
+  <!-- Firebase Rules (copy-paste into console) -->
+  <details class="rules">
+    <summary>Firebase Realtime Database Rules (copy-paste)</summary>
+    <pre id="rules-json" style="white-space:pre-wrap;border:1px solid var(--border);padding:12px;border-radius:12px;background:#fff;color:#111">{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "movies": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'admin'",
+      "$movieId": {
+        ".validate": "newData.hasChildren(['title','description','thumbnail','vimeoUrl','date','createdAt']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('description').isString() && newData.child('thumbnail').isString() && newData.child('vimeoUrl').isString() && newData.child('date').isString()"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        "role": {
+          ".write": "false",
+          ".validate": "newData.val() == 'user' || newData.val() == 'admin'"
+        },
+        "username": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+        "likes": { "$movie": { ".validate": "newData.val() === true || !newData.exists()" } },
+        "watchlist": { "$movie": { ".validate": "newData.val() === true || !newData.exists()" } }
+      }
+    }
+  }
+}</pre>
+  </details>
+
+  <script type="module">
+    // Firebase v10 Modular SDK
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getDatabase, ref, set, update, push, onValue, get, child } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+    // IMPORTANT: Replace with your Firebase project configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DB_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // ------- Utilities -------
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const toast = (msg) => { const el = $('#toast'); el.textContent = msg; el.style.display = 'block'; clearTimeout(window.__t); window.__t = setTimeout(()=>{ el.style.display='none'; }, 1600); };
+
+    const isValidUrl = (s) => { try { new URL(s); return true; } catch { return false; } };
+    const isValidVimeo = (s) => { if(!isValidUrl(s)) return false; const u = new URL(s); return u.hostname.includes('vimeo.com'); };
+    const isValidIbb = (s) => { if(!isValidUrl(s)) return false; const u = new URL(s); return u.hostname === 'i.ibb.co'; };
+
+    const state = {
+      currentView: 'auth',
+      role: null,
+      user: null,
+      movies: {},
+      likeSet: new Set(),
+      watchSet: new Set(),
+      currentMovie: null,
+      unsubMovies: null
+    };
+
+    function show(viewId) {
+      state.currentView = viewId;
+      $$('.screen').forEach(s => s.classList.remove('active'));
+      $(`#screen-${viewId}`).classList.add('active');
+    }
+
+    // ------- Auth Tabs -------
+    $('#tab-user').addEventListener('click', () => {
+      $('#tab-user').classList.add('primary');
+      $('#tab-admin').classList.remove('primary');
+      $('#auth-user').classList.add('active');
+      $('#auth-admin').classList.remove('active');
+    });
+    $('#tab-admin').addEventListener('click', () => {
+      $('#tab-admin').classList.add('primary');
+      $('#tab-user').classList.remove('primary');
+      $('#auth-admin').classList.add('active');
+      $('#auth-user').classList.remove('active');
+    });
+
+    // ------- Auth flows -------
+    async function ensureUserDoc(uid, defaults) {
+      const snap = await get(child(ref(db), `users/${uid}`));
+      if (!snap.exists()) {
+        await set(ref(db, `users/${uid}`), defaults);
+      } else {
+        // Never allow client to change role here
+        if (defaults && defaults.username && snap.val().username !== defaults.username) {
+          await update(ref(db, `users/${uid}`), { username: defaults.username });
+        }
+      }
+    }
+
+    // User Register
+    $('#form-user-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('#user-reg-name').value.trim();
+      const email = $('#user-reg-email').value.trim();
+      const pass = $('#user-reg-pass').value;
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      await ensureUserDoc(cred.user.uid, { username: name, role: 'user' });
+      toast('Account created');
+    });
+
+    // User Login
+    $('#form-user-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('#user-login-email').value.trim();
+      const pass = $('#user-login-pass').value;
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const roleSnap = await get(ref(db, `users/${cred.user.uid}/role`));
+      if (!roleSnap.exists() || roleSnap.val() !== 'user') {
+        await signOut(auth);
+        toast('Not a standard user account');
+        return;
+      }
+      toast('Welcome back');
+    });
+
+    // Admin Register
+    $('#form-admin-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('#admin-reg-name').value.trim();
+      const email = $('#admin-reg-email').value.trim();
+      const pass = $('#admin-reg-pass').value;
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      // Attempt to set role; rules block role updates by clients. This may succeed only if rules allow initial write.
+      try { await ensureUserDoc(cred.user.uid, { username: name, role: 'admin' }); } catch {}
+      toast('Admin account created (ensure role is set in DB rules/admin console)');
+    });
+
+    // Admin Login
+    $('#form-admin-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('#admin-login-email').value.trim();
+      const pass = $('#admin-login-pass').value;
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const roleSnap = await get(ref(db, `users/${cred.user.uid}/role`));
+      if (!roleSnap.exists() || roleSnap.val() !== 'admin') {
+        await signOut(auth);
+        toast('This account is not an admin');
+        return;
+      }
+      toast('Admin logged in');
+    });
+
+    // Global logout buttons
+    $('#btn-admin-logout').addEventListener('click', async () => { await signOut(auth); });
+    $('#btn-logout').addEventListener('click', async () => { await signOut(auth); $('#modal-profile').classList.remove('open'); });
+
+    // Profile modal toggles
+    $('#btn-profile').addEventListener('click', () => { $('#modal-profile').classList.add('open'); renderProfileLists(); });
+    $('#btn-close-profile').addEventListener('click', () => { $('#modal-profile').classList.remove('open'); });
+
+    // Username change
+    $('#form-username').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('#new-username').value.trim();
+      if (!name) return;
+      if (!auth.currentUser) return;
+      await updateProfile(auth.currentUser, { displayName: name });
+      await update(ref(db, `users/${auth.currentUser.uid}`), { username: name });
+      toast('Username updated');
+      renderProfileLists();
+    });
+
+    // Auth state routing
+    onAuthStateChanged(auth, async (user) => {
+      state.user = user;
+      if (!user) {
+        detachMovies();
+        state.role = null;
+        state.likeSet = new Set();
+        state.watchSet = new Set();
+        show('auth');
+        return;
+      }
+      const roleSnap = await get(ref(db, `users/${user.uid}/role`));
+      const role = roleSnap.exists() ? roleSnap.val() : 'user';
+      state.role = role;
+      $('#profile-email').textContent = user.email || '';
+
+      // Subscribe to user likes/watchlist state
+      onValue(ref(db, `users/${user.uid}/likes`), (s) => {
+        state.likeSet = new Set(Object.keys(s.val() || {}));
+        if (state.currentView === 'stream' && state.currentMovie) updateToggleStates();
+        if ($('#modal-profile').classList.contains('open')) renderProfileLists();
+      });
+      onValue(ref(db, `users/${user.uid}/watchlist`), (s) => {
+        state.watchSet = new Set(Object.keys(s.val() || {}));
+        if (state.currentView === 'stream' && state.currentMovie) updateToggleStates();
+        if ($('#modal-profile').classList.contains('open')) renderProfileLists();
+      });
+
+      if (role === 'admin') {
+        attachMovies(renderAdminList);
+        show('admin');
+      } else {
+        attachMovies(renderUserFeed);
+        show('user');
+      }
+    });
+
+    // ------- Movies subscription -------
+    function attachMovies(renderer) {
+      detachMovies();
+      state.unsubMovies = onValue(ref(db, 'movies'), (snap) => {
+        state.movies = snap.val() || {};
+        renderer();
+      });
+    }
+    function detachMovies() { if (typeof state.unsubMovies === 'function') { state.unsubMovies(); state.unsubMovies = null; } }
+
+    // ------- Admin: create/update movie -------
+    $('#btn-reset-form').addEventListener('click', () => { resetMovieForm(); });
+    function resetMovieForm() {
+      $('#movie-id').value = '';
+      $('#movie-vimeo').value = '';
+      $('#movie-thumb').value = '';
+      $('#movie-title').value = '';
+      $('#movie-desc').value = '';
+      $('#movie-date').value = '';
+      $('#movie-form-status').textContent = 'Ready';
+    }
+
+    $('#form-movie').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (state.role !== 'admin') return toast('Admins only');
+      const vimeoUrl = $('#movie-vimeo').value.trim();
+      const thumb = $('#movie-thumb').value.trim();
+      const title = $('#movie-title').value.trim();
+      const desc = $('#movie-desc').value.trim();
+      const date = $('#movie-date').value;
+
+      if (!isValidVimeo(vimeoUrl)) { toast('Invalid Vimeo URL'); return; }
+      if (!isValidIbb(thumb)) { toast('Thumbnail must be i.ibb.co'); return; }
+
+      const id = $('#movie-id').value || push(ref(db, 'movies')).key;
+      const data = { vimeoUrl, thumbnail: thumb, title, description: desc, date, createdAt: Date.now(), updatedAt: Date.now() };
+      await update(ref(db, `movies/${id}`), data);
+      $('#movie-id').value = id;
+      $('#movie-form-status').textContent = 'Saved';
+      toast('Movie saved');
+    });
+
+    function renderAdminList() {
+      const list = $('#admin-movie-list');
+      const q = $('#admin-search').value?.toLowerCase() || '';
+      list.innerHTML = '';
+      const entries = Object.entries(state.movies || {});
+      for (const [id, m] of entries.filter(([_,m]) => m.title?.toLowerCase().includes(q))) {
+        const item = document.createElement('div');
+        item.className = 'admin-item';
+        item.innerHTML = `
+          <div class="ai-thumb"><img alt="thumb" src="${m.thumbnail}"/></div>
+          <div class="ai-info"><h4>${m.title}</h4><div class="tag">${m.date || ''}</div></div>
+          <div class="ai-actions">
+            <button class="icon-btn" data-edit="${id}" title="Edit">${svgEdit()}</button>
+            <button class="icon-btn" data-del="${id}" title="Delete">${svgTrash()}</button>
+          </div>
+        `;
+        list.appendChild(item);
+      }
+      list.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-edit');
+        const m = state.movies[id];
+        $('#movie-id').value = id;
+        $('#movie-vimeo').value = m.vimeoUrl;
+        $('#movie-thumb').value = m.thumbnail;
+        $('#movie-title').value = m.title;
+        $('#movie-desc').value = m.description;
+        $('#movie-date').value = m.date || '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        $('#movie-form-status').textContent = 'Editing…';
+      }));
+      list.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-del');
+        if (!confirm('Delete this movie?')) return;
+        await set(ref(db, `movies/${id}`), null);
+        toast('Deleted');
+      }));
+    }
+    $('#admin-search').addEventListener('input', renderAdminList);
+
+    // ------- User feed -------
+    function renderUserFeed() {
+      const feed = $('#user-feed');
+      const q = $('#user-search').value?.toLowerCase() || '';
+      feed.innerHTML = '';
+      const entries = Object.entries(state.movies || {});
+      if (entries.length === 0) {
+        feed.innerHTML = '<div class="tag">No movies yet</div>';
+        return;
+      }
+      for (const [id, m] of entries.filter(([_,m]) => m.title?.toLowerCase().includes(q))) {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <div class="thumb"><img loading="lazy" src="${m.thumbnail}" alt="${m.title}"/></div>
+          <div class="movie-meta"><div class="movie-title">${m.title}</div><div class="movie-year">${(m.date || '').slice(0,4)}</div></div>
+        `;
+        card.addEventListener('click', () => openStream(id));
+        feed.appendChild(card);
+      }
+    }
+    $('#user-search').addEventListener('input', renderUserFeed);
+
+    // ------- Streaming page -------
+    function vimeoEmbedHtml(url) {
+      // Accept https://vimeo.com/{id} or other variants
+      const u = new URL(url);
+      const id = u.pathname.split('/').filter(Boolean).pop();
+      const embed = `https://player.vimeo.com/video/${id}`;
+      return `<iframe src="${embed}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    }
+
+    function openStream(id) {
+      state.currentMovie = id;
+      const m = state.movies[id];
+      if (!m) return;
+      $('#stream-title').textContent = m.title;
+      $('#player').innerHTML = vimeoEmbedHtml(m.vimeoUrl);
+      $('#stream-desc').textContent = m.description || '';
+      updateToggleStates();
+      show('stream');
+    }
+
+    function updateToggleStates() {
+      const id = state.currentMovie;
+      if (!id) return;
+      const liked = state.likeSet.has(id);
+      const watched = state.watchSet.has(id);
+      $('#btn-like').classList.toggle('active', liked);
+      $('#btn-watch').classList.toggle('active', watched);
+    }
+
+    $('#btn-back').addEventListener('click', (e) => {
+      e.preventDefault();
+      // Return to user home without changing user sets
+      show('user');
+    });
+
+    async function togglePath(setName, btnEl) {
+      if (!auth.currentUser || !state.currentMovie) return;
+      const uid = auth.currentUser.uid;
+      const id = state.currentMovie;
+      const path = `users/${uid}/${setName}/${id}`;
+      const active = btnEl.classList.contains('active');
+      // Update instantly without any navigation
+      btnEl.classList.toggle('active');
+      await set(ref(db, path), active ? null : true);
+      toast(active ? (setName==='likes'?'Unliked':'Removed') : (setName==='likes'?'Liked':'Saved'));
+      // Do not redirect; state listeners will sync but modal/screen stays
+    }
+
+    $('#btn-like').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); togglePath('likes', e.currentTarget); });
+    $('#btn-watch').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); togglePath('watchlist', e.currentTarget); });
+
+    // ------- Profile modal lists -------
+    function renderProfileLists() {
+      if (!auth.currentUser) return;
+      const likedEl = $('#list-liked');
+      const watchEl = $('#list-watch');
+      likedEl.innerHTML = '';
+      watchEl.innerHTML = '';
+
+      const mkRow = (id) => {
+        const title = state.movies[id]?.title || id;
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        row.innerHTML = `<div>${title}</div><button class="btn" data-remove="${id}">Remove</button>`;
+        return row;
+      };
+
+      [...state.likeSet].forEach(id => likedEl.appendChild(mkRow(id)));
+      [...state.watchSet].forEach(id => watchEl.appendChild(mkRow(id)));
+
+      likedEl.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-remove');
+        await set(ref(db, `users/${auth.currentUser.uid}/likes/${id}`), null);
+        // Keep modal open and refresh list
+        renderProfileLists();
+      }));
+      watchEl.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-remove');
+        await set(ref(db, `users/${auth.currentUser.uid}/watchlist/${id}`), null);
+        renderProfileLists();
+      }));
+    }
+
+    // ------- SVG helpers -------
+    function svgEdit() { return `<svg viewBox='0 0 24 24'><path d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z'></path><path d='M20.71 7.04a1.003 1.003 0 0 0 0-1.42L18.37 3.29a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.83z'></path></svg>`; }
+    function svgTrash() { return `<svg viewBox='0 0 24 24'><path d='M3 6h18'></path><path d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path><path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'></path><path d='M10 11v6M14 11v6'></path></svg>`; }
+
+    // ------- Guard: Warn if config placeholders present -------
+    if (!firebaseConfig || String(firebaseConfig.apiKey || '').includes('YOUR_')) {
+      console.warn('Firebase config is not set. Please provide your project configuration.');
+      toast('Configure Firebase to use the app');
+    }
+  </script>
+</body>
+</html>
